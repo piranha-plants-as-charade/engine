@@ -1,0 +1,17 @@
+[project]
+name = "piranha-plants-as-charade"
+version = "0.1.0"
+description = ""
+readme = "README.md"
+requires-python = "3.11.*"
+dependencies = [
+    "numpy (>=2.2.2,<3.0.0)",
+    "scipy (>=1.15.1,<2.0.0)",
+    "matplotlib (>=3.10.0,<4.0.0)",
+    "pydantic (>=2.10.6,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
