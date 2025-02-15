@@ -1,49 +1,65 @@
-from typing import Tuple, List
+from typing import Tuple, List, Literal
 from functools import reduce
 from midiutil.MidiFile import MIDIFile
+from dataclasses import dataclass
 
 from components.pitch_set import PitchSet
 
 
-class RollNote:
-
-    def __init__(self, *, pitch: int, start: int, duration: int):
-        self.pitch = pitch
-        self.start = start
-        self.duration = duration
+@dataclass
+class Note:
+    pitch: int
+    start: int
+    duration: int
 
     @property
     def end(self) -> int:
         return self.start + self.duration
 
+    def reoctave_near_pitch(
+        self,
+        target: int,
+        direction: Literal["above", "below", "any"] = "any",
+    ) -> "Note":
+        candidates = {
+            "above": target + (self.pitch - target) % 12,
+            "below": target - (target - self.pitch) % 12,
+        }
+        candidates["any"] = (
+            candidates["below"]
+            if candidates["above"] - target > target - candidates["below"]
+            else candidates["above"]
+        )
+        return Note(
+            pitch=candidates[direction],
+            start=self.start,
+            duration=self.duration,
+        )
 
+
+@dataclass
 class Roll:
 
-    def __init__(self, *, bpm: int, quantization: int = 16):
-        self.bpm = bpm
-        self.quantization = quantization
-        self._notes: Tuple[RollNote, ...] = tuple()
+    bpm: int
+    quantization: int = 16
+    __notes: Tuple[Note, ...] = tuple()
+
+    def Time(self, time: float) -> int:
+        return round(time * self.quantization)
 
     def __len__(self) -> int:
         return reduce(lambda acc, note: max(acc, note.end), self.notes, 0)
 
-    def Note(self, *, pitch: int, start: float, duration: float):
-        return RollNote(
-            pitch=pitch,
-            start=round(start * self.quantization),
-            duration=round(duration * self.quantization),
-        )
-
     @property
     def notes(self) -> Tuple[Note, ...]:
-        return self._notes
+        return self.__notes
 
-    def add_notes(self, notes: Tuple[Note, ...]):
-        self._notes = self._notes + notes
+    def add_notes(self, *notes: Note):
+        self.__notes = self.__notes + notes
 
     def get_pitches_at_time(self, time: int) -> PitchSet:
         pitches = [note.pitch for note in self.notes if note.start <= time < note.end]
-        return PitchSet(frozenset(pitches))
+        return PitchSet(set=frozenset(pitches))
 
     def get_pitches_indexed_by_time(self) -> List[PitchSet]:
         return [self.get_pitches_at_time(time) for time in range(len(self))]
@@ -58,12 +74,15 @@ class Roll:
         )
 
     def to_midi(self) -> MIDIFile:
-        file = MIDIFile(1)  # only 1 track
+        file = MIDIFile(
+            numTracks=1,
+            ticks_per_quarternote=self.quantization,
+        )
         track = 0  # the only track
 
         time = 0  # start at the beginning
         file.addTrackName(track, time, "Sample Track")
-        file.addTempo(track, time, 120)
+        file.addTempo(track, time, self.bpm)
 
         # add some notes
         channel = 0
@@ -74,8 +93,8 @@ class Roll:
                 track,
                 channel,
                 note.pitch,
-                note.start * 4 / self.quantization,  # assuming 4/4
-                note.duration * 4 / self.quantization,
+                note.start / self.quantization * 4,  # assumes beat = quarter note
+                note.duration / self.quantization * 4,
                 volume,
             )
 

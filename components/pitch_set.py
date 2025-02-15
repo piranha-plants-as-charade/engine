@@ -1,10 +1,11 @@
 from typing import FrozenSet, Set
+from dataclasses import dataclass
 from functools import cached_property
 
+@dataclass
 class PitchSet:
 
-    def __init__(self, set: FrozenSet[int]):
-        self.set = set
+    set: FrozenSet[int]
 
     @cached_property
     def unoctaved_set(self) -> Set[int]:
