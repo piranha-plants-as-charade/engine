@@ -26,6 +26,14 @@ class ChordQuality(Enum):
 
 
 class Chord(PitchSet):
+    """
+    Represents a music chord.
+
+    TODO: Add the bass note.
+
+    :param root: The root note (NOT the bass note).
+    :param quality: The chord quality.
+    """
 
     def __init__(self, root: int, quality: ChordQuality):
         self.root = root

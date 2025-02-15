@@ -2,6 +2,8 @@ from typing import FrozenSet, Set
 from dataclasses import dataclass
 from functools import cached_property
 
+
+# TODO: replace?
 @dataclass
 class PitchSet:
 
