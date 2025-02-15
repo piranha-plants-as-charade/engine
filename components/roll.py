@@ -15,17 +15,24 @@ class Roll:
     :param quantization: The minimum unit of time (e.g. quantization = 16 means quantize by 16th notes)
     """
 
-    bpm: int
+    beats_per_minute: int
     quantization: int = 16
+    time_signature: Tuple[int, int] = (4, 4)
     __notes: Tuple[Note, ...] = tuple()
 
-    def Time(self, time: float) -> int:
-        """
-        Transforms the input into roll time.
+    def Duration(self, duration: int) -> int:
+        return round(duration / self.beat_duration * self.quantization)
 
-        :param time: The input time with scale: 1 = whole note.
-        """
-        return round(time * self.quantization)
+    def Time(self, measure: int, beat: float) -> int:
+        return self.Duration((measure * self.beats_per_measure + beat))
+
+    @property
+    def beats_per_measure(self):
+        return self.time_signature[0]
+
+    @property
+    def beat_duration(self):
+        return self.time_signature[1]
 
     @property
     def notes(self) -> Tuple[Note, ...]:
@@ -56,7 +63,8 @@ class Roll:
 
         time = 0  # start at the beginning
         file.addTrackName(track, time, "Sample Track")
-        file.addTempo(track, time, self.bpm)
+        file.addTempo(track, time, self.beats_per_minute)
+        # TODO: add time signature
 
         # add some notes
         channel = 0
@@ -67,8 +75,8 @@ class Roll:
                 track,
                 channel,
                 note.pitch,
-                note.start / self.quantization * 4,  # assumes beat = quarter note
-                note.duration / self.quantization * 4,
+                note.start / self.quantization * self.beat_duration,
+                note.duration / self.quantization * self.beat_duration,
                 volume,
             )
 
