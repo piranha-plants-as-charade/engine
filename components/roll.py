@@ -11,10 +11,10 @@ class Roll:
     """
     The representation for a song.
 
-    :param bpm: beat = quarter note.
+    :param beats_per_minute: The beats per minute in terms of the time signature beat.
     :param quantization: The minimum unit of time (e.g. quantization = 16 means quantize by 16th notes)
+    :param time_signature: The time signature of the song.
     """
-
     beats_per_minute: int
     quantization: int = 16
     time_signature: Tuple[int, int] = (4, 4)
