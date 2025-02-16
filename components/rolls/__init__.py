@@ -1,5 +1,5 @@
 from typing import Tuple
-from midiutil.MidiFile import MIDIFile
+from midiutil.MidiFile import MIDIFile  # type: ignore
 from dataclasses import dataclass
 
 from components.pitch_set import PitchSet
@@ -15,12 +15,15 @@ class Roll:
     :param quantization: The minimum unit of time (e.g. quantization = 16 means quantize by 16th notes)
     :param time_signature: The time signature of the song.
     """
+
     beats_per_minute: int
     quantization: int = 16
     time_signature: Tuple[int, int] = (4, 4)
-    __notes: Tuple[Note, ...] = tuple()
 
-    def Duration(self, duration: int) -> int:
+    def __post_init__(self):
+        self.__notes: Tuple[Note, ...] = tuple()
+
+    def Duration(self, duration: float) -> int:
         return round(duration / self.beat_duration * self.quantization)
 
     def Time(self, measure: int, beat: float) -> int:
@@ -62,8 +65,8 @@ class Roll:
         track = 0  # the only track
 
         time = 0  # start at the beginning
-        file.addTrackName(track, time, "Sample Track")
-        file.addTempo(track, time, self.beats_per_minute)
+        file.addTrackName(track, time, "Sample Track")  # type: ignore
+        file.addTempo(track, time, self.beats_per_minute)  # type: ignore
         # TODO: add time signature
 
         # add some notes
@@ -71,7 +74,7 @@ class Roll:
         volume = 100
 
         for note in self.notes:
-            file.addNote(
+            file.addNote(  # type: ignore
                 track,
                 channel,
                 note.pitch,

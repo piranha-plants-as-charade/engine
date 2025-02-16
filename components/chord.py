@@ -9,7 +9,7 @@ from components.pitch_set import PitchSet
 class ChordQuality(Enum):
     @dataclass
     class Data:
-        structure: Tuple[str]
+        structure: Tuple[str, ...]
 
     Maj = Data(
         structure=("1", "3", "5"),

@@ -1,5 +1,6 @@
 import re
 from functools import cache
+from typing import Dict
 
 from transformers.interval import INTERVAL_TRANSFORMER
 
@@ -7,7 +8,7 @@ from transformers.interval import INTERVAL_TRANSFORMER
 class PitchTransformer:
     def __init__(self):
         note_names = "CDEFGAB"
-        self.pitch_offsets = {}
+        self.pitch_offsets: Dict[str, int] = {}
         for i, name in enumerate(note_names):
             self.pitch_offsets[name] = INTERVAL_TRANSFORMER.major_scale_intervals[i + 1]
 
