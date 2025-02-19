@@ -28,5 +28,3 @@ class PitchTransformer:
 
 
 PITCH_TRANSFORMER = PitchTransformer()
-
-Pitch = PITCH_TRANSFORMER.from_str

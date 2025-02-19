@@ -77,7 +77,7 @@ class Roll:
             file.addNote(  # type: ignore
                 track,
                 channel,
-                note.pitch,
+                note.pitch.value,
                 note.start / self.quantization * self.beat_duration,
                 note.duration / self.quantization * self.beat_duration,
                 volume,

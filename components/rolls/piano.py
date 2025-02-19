@@ -1,8 +1,8 @@
 from components.rolls import Roll
 from components.chord import Chord
 from components.note import Note
-from transformers.pitch import Pitch
-from transformers.interval import Interval
+from components.pitch import Pitch
+from components.interval import Interval
 
 
 class PianoRoll(Roll):
@@ -15,16 +15,16 @@ class PianoRoll(Roll):
                         pitch=chord.root,
                         start=time,
                         duration=self.Duration(1 / 2),
-                    ).reoctave_near_pitch(Pitch("C3"))
+                    ).reoctave_near_pitch(Pitch.from_str("C3"))
                 )
             elif i % 8 == 4:
                 self.add_notes(
                     Note(
-                        pitch=chord.root + Interval("5"),
+                        pitch=chord.root + Interval.from_str("5"),
                         start=time,
                         duration=self.Duration(1 / 2),
                     ).reoctave_near_pitch(
-                        min(self.get_pitches_at_time(time - self.Duration(1)).set),
+                        list(self.get_pitches_at_time(time - self.Duration(1)).set)[0],
                         position="below",
                     )
                 )
@@ -35,7 +35,10 @@ class PianoRoll(Roll):
                             pitch=pitch,
                             start=time,
                             duration=self.Duration(1 / 4),
-                        ).reoctave_near_pitch(Pitch("C5"))
-                        for pitch in chord.set
+                        ).reoctave_near_pitch(Pitch.from_str("C5"))
+                        for pitch in chord.get_pitches(
+                            type="chord",
+                            max_num_notes=3,
+                        ).set
                     ]
                 )
