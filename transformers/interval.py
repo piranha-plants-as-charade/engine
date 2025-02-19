@@ -25,5 +25,3 @@ class IntervalTransformer:
 
 
 INTERVAL_TRANSFORMER = IntervalTransformer()
-
-Interval = INTERVAL_TRANSFORMER.from_str

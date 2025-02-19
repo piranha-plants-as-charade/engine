@@ -2,6 +2,9 @@ from typing import Literal
 from dataclasses import dataclass
 
 
+from components.pitch import Pitch
+
+
 @dataclass
 class Note:
     """
@@ -11,7 +14,8 @@ class Note:
     :param start: The start time in terms of the associated roll's time.
     :param duration: The start duration in terms of the associated roll's time.
     """
-    pitch: int
+
+    pitch: Pitch
     start: int
     duration: int
 
@@ -21,7 +25,7 @@ class Note:
 
     def reoctave_near_pitch(
         self,
-        target: int,
+        target: Pitch,
         position: Literal["above", "below", "any"] = "any",
     ) -> "Note":
         """
@@ -30,17 +34,8 @@ class Note:
         :param target: The target pitch.
         :param direction: The position of the new pitch relative to the target pitch.
         """
-        candidates = {
-            "above": target + (self.pitch - target) % 12,
-            "below": target - (target - self.pitch) % 12,
-        }
-        candidates["any"] = (
-            candidates["below"]
-            if candidates["above"] - target > target - candidates["below"]
-            else candidates["above"]
-        )
         return Note(
-            pitch=candidates[position],
+            pitch=self.pitch.reoctave_near_pitch(target, position),
             start=self.start,
             duration=self.duration,
         )
