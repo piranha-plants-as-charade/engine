@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from transformers.interval import INTERVAL_TRANSFORMER
 
@@ -10,10 +11,18 @@ class Interval:
     """
 
     value: int
+    chord_tone: Optional[int] = None
 
     @classmethod
-    def from_str(cls, value: str) -> "Interval":
-        return cls(INTERVAL_TRANSFORMER.from_str(value))
+    def from_str(
+        cls,
+        value: str,
+        chord_tone: Optional[int] = None,
+    ) -> "Interval":
+        return cls(
+            value=INTERVAL_TRANSFORMER.from_str(value),
+            chord_tone=chord_tone,
+        )
 
     def __add__(self, val: "Interval") -> "Interval":
         return Interval(self.value + val.value)

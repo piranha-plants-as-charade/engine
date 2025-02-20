@@ -1,8 +1,8 @@
-from typing import Tuple
+from typing import Tuple, FrozenSet
 from midiutil.MidiFile import MIDIFile  # type: ignore
 from dataclasses import dataclass
 
-from components.pitch_set import PitchSet
+from components.pitch import Pitch
 from components.note import Note
 
 
@@ -49,12 +49,12 @@ class Roll:
         """
         self.__notes = self.__notes + notes
 
-    def get_pitches_at_time(self, time: int) -> PitchSet:
+    def get_pitches_at_time(self, time: int) -> FrozenSet[Pitch]:
         """
         Retrieves the existing pitches that cross the given time. Pitches that end at `time` are not retrieved.
         """
         pitches = [note.pitch for note in self.notes if note.start <= time < note.end]
-        return PitchSet(set=frozenset(pitches))
+        return frozenset(pitches)
 
     # TODO: replace with something better
     def to_midi(self) -> MIDIFile:
