@@ -1,41 +1,36 @@
 from enum import Enum
 from dataclasses import dataclass
-from typing import Tuple, Literal
+from typing import Tuple, FrozenSet
 
 from components.pitch import Pitch
 from components.interval import Interval
-from components.pitch_set import PitchSet
+
+
+@dataclass(frozen=True)
+class ChordStructure:
+    intervals: Tuple[Interval, ...]
 
 
 class ChordQuality(Enum):
-    @dataclass
-    class Data:
-        @dataclass
-        class PriorityInterval:
-            interval: str
-            bass_priority: int  # smaller = more important
-            chord_priority: int  # smaller = more important
 
-        structure: Tuple[PriorityInterval, ...]
-
-    Maj = Data(
-        structure=(
-            Data.PriorityInterval(interval="1", bass_priority=1, chord_priority=2),
-            Data.PriorityInterval(interval="3", bass_priority=3, chord_priority=1),
-            Data.PriorityInterval(interval="5", bass_priority=2, chord_priority=3),
-        ),
+    Maj = ChordStructure(
+        intervals=(
+            Interval.from_str("1", chord_tone=1),
+            Interval.from_str("3", chord_tone=3),
+            Interval.from_str("5", chord_tone=5),
+        )
     )
-    Dom7 = Data(
-        structure=(
-            Data.PriorityInterval(interval="1", bass_priority=1, chord_priority=3),
-            Data.PriorityInterval(interval="3", bass_priority=3, chord_priority=1),
-            Data.PriorityInterval(interval="5", bass_priority=2, chord_priority=3),
-            Data.PriorityInterval(interval="b7", bass_priority=3, chord_priority=2),
-        ),
+    Dom7 = ChordStructure(
+        intervals=(
+            Interval.from_str("1", chord_tone=1),
+            Interval.from_str("3", chord_tone=3),
+            Interval.from_str("5", chord_tone=5),
+            Interval.from_str("b7", chord_tone=7),
+        )
     )
 
 
-@dataclass
+@dataclass(frozen=True)
 class Chord:
     """
     Represents a music chord.
@@ -49,23 +44,8 @@ class Chord:
     root: Pitch
     quality: ChordQuality
 
-    def get_pitches(
-        self,
-        type: Literal["bass", "chord"] = "chord",
-        max_num_notes: int = 10,
-    ) -> PitchSet:
-        structure = list(self.quality.value.structure)
-        structure.sort(
-            key=lambda iv: iv.bass_priority if type == "bass" else iv.chord_priority,
-        )
-        return PitchSet(
-            set=frozenset(
-                [
-                    self.root + Interval.from_str(iv.interval)
-                    for iv in structure[0:max_num_notes]
-                ]
-            )
-        )
+    def get_pitches(self) -> FrozenSet[Tuple[Pitch, Interval]]:
+        return frozenset([(self.root + iv, iv) for iv in self.quality.value.intervals])
 
     def get_V7(self):
         return Chord(self.root + Interval.from_str("5"), ChordQuality.Dom7)
