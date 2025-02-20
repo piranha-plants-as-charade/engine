@@ -11,10 +11,14 @@ ChordVoicerMemo = Dict[int, FrozenSet[Pitch]]
 
 @dataclass(frozen=True)
 class ChordVoicerInstruction:
-    condition: Callable[[int, Chord], bool]  # (index, chord) -> run action?
+    condition: Callable[
+        [int, Chord],  # index, chord
+        bool,  # run action?
+    ]
     action: Callable[
-        [ChordVoicerMemo, int, Chord], FrozenSet[Pitch]
-    ]  # (memo, index, chord) -> pitch set
+        [ChordVoicerMemo, int, Chord],  # (memo, index, chord)
+        FrozenSet[Pitch],  # pitch set
+    ]
 
 
 class ChordVoicer(ABC):
@@ -28,7 +32,7 @@ class ChordVoicer(ABC):
         pass
 
     @classmethod
-    def voice(cls, chord_progression: List[Chord]) -> List[FrozenSet[Pitch]]:
+    def generate(cls, chord_progression: List[Chord]) -> List[FrozenSet[Pitch]]:
         memo: ChordVoicerMemo = dict()
         for instruction in cls.get_instructions(chord_progression):
             for index, chord in enumerate(chord_progression):
