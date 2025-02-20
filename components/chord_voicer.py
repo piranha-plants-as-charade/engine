@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import FrozenSet, List, Dict, Callable
 
 from components.chord import Chord, ChordQuality
+from components.chord_progression import ChordProgression
 from components.pitch import Pitch
 
 
@@ -27,18 +28,19 @@ class ChordVoicer(ABC):
     @abstractmethod
     def get_instructions(
         cls,
-        chord_progression: List[Chord],
+        chord_progression: ChordProgression,
     ) -> List[ChordVoicerInstruction]:
         pass
 
     @classmethod
-    def generate(cls, chord_progression: List[Chord]) -> List[FrozenSet[Pitch]]:
+    def generate(cls, chord_progression: ChordProgression) -> List[FrozenSet[Pitch]]:
         memo: ChordVoicerMemo = dict()
         for instruction in cls.get_instructions(chord_progression):
-            for index, chord in enumerate(chord_progression):
+            for index, chord_at_time in enumerate(chord_progression.chords):
+                chord = chord_at_time.chord
                 if instruction.condition(index, chord):
                     memo[index] = instruction.action(memo, index, chord)
-        return [memo[i] for i in range(len(chord_progression))]
+        return [memo[i] for i in range(len(chord_progression.chords))]
 
 
 class BlockChordVoicer(ChordVoicer):
@@ -46,7 +48,7 @@ class BlockChordVoicer(ChordVoicer):
     @classmethod
     def get_instructions(
         cls,
-        chord_progression: List[Chord],
+        chord_progression: ChordProgression,
     ) -> List[ChordVoicerInstruction]:
 
         def is_default_chord(index: int, chord: Chord) -> bool:
@@ -68,7 +70,7 @@ class BlockChordVoicer(ChordVoicer):
         def is_resolvable_dominant_chord(index: int, chord: Chord) -> bool:
             if chord.quality is not ChordQuality.Dom7:  # must be dominant chord
                 return False
-            if index == len(chord_progression) - 1:  # cannot be last chord
+            if index == len(chord_progression.chords) - 1:  # cannot be last chord
                 return False
             return True
 
