@@ -1,21 +1,23 @@
 from dataclasses import dataclass
+from typing import FrozenSet
 
 from components.rolls import Roll
 from components.chord import Chord
 from components.note import Note
 from components.pitch import Pitch
 from components.interval import Interval
-from components.chord_voicer import ChordVoicer, BlockChordVoicer
 
 
 @dataclass
 class PianoRoll(Roll):
 
-    def __post_init__(self):
-        self.chord_voicer: ChordVoicer = BlockChordVoicer()
-        return super().__post_init__()
-
-    def add_stride_pattern(self, chord: Chord, start: int, end: int):
+    def add_stride_pattern(
+        self,
+        chord: Chord,
+        chord_voicing: FrozenSet[Pitch],
+        start: int,
+        end: int,
+    ):
         for i, time in enumerate(range(start, end)):
             if i % 8 == 0:
                 self.add_notes(
@@ -44,6 +46,6 @@ class PianoRoll(Roll):
                             start=time,
                             duration=self.Duration(1 / 4),
                         )
-                        for pitch in self.chord_voicer.voice(chord)
+                        for pitch in chord_voicing
                     ]
                 )
