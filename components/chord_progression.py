@@ -15,11 +15,18 @@ class ChordAtTime:
 @dataclass
 class ChordProgression:
 
-    start_time: int
-    end_time: int
-
-    def __post_init__(self):
+    def __init__(self, start_time: int, end_time: int):
+        self.__start_time = start_time
+        self.__end_time = end_time
         self.__chords: Dict[int, Chord] = dict()
+
+    @property
+    def start_time(self):
+        return self.__start_time
+
+    @property
+    def end_time(self):
+        return self.__end_time
 
     @cached_property
     def chords(self) -> List[ChordAtTime]:
@@ -48,5 +55,8 @@ class ChordProgression:
         TODO
         """
         for chord, time in chords:
+            assert (
+                self.start_time <= time < self.end_time
+            )  # time must be in chord progression time range
             self.__chords[time] = chord
         self.clear_chords_cache()
