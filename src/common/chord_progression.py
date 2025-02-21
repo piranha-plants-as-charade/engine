@@ -16,21 +16,21 @@ class ChordAtTime:
 class ChordProgression:
 
     def __init__(self, start_time: int, end_time: int):
-        self.__start_time = start_time
-        self.__end_time = end_time
-        self.__chords: Dict[int, Chord] = dict()
+        self._start_time = start_time
+        self._end_time = end_time
+        self._chords: Dict[int, Chord] = dict()
 
     @property
     def start_time(self):
-        return self.__start_time
+        return self._start_time
 
     @property
     def end_time(self):
-        return self.__end_time
+        return self._end_time
 
     @cached_property
     def chords(self) -> List[ChordAtTime]:
-        sorted_chords = sorted(self.__chords.items(), key=lambda x: x[0])
+        sorted_chords = sorted(self._chords.items(), key=lambda x: x[0])
         return [
             ChordAtTime(
                 chord=chord,
@@ -58,5 +58,5 @@ class ChordProgression:
             assert (
                 self.start_time <= time < self.end_time
             )  # time must be in chord progression time range
-            self.__chords[time] = chord
+            self._chords[time] = chord
         self.clear_chords_cache()
