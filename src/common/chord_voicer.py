@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import FrozenSet, List, Dict, Callable
 
-from components.chord import Chord, ChordQuality
-from components.chord_progression import ChordProgression
-from components.pitch import Pitch
+from common.chord import Chord, ChordQuality
+from common.chord_progression import ChordProgression
+from common.pitch import Pitch
 
 
 ChordVoicerMemo = Dict[int, FrozenSet[Pitch]]

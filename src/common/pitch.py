@@ -1,7 +1,7 @@
 from typing import Literal, Optional
 from dataclasses import dataclass
 
-from components.interval import Interval
+from common.interval import Interval
 from transformers.pitch import PITCH_TRANSFORMER
 
 
@@ -41,7 +41,7 @@ class Pitch:
         Returns a copy shifted by some number of octaves such that it is nearest to the target pitch given the constraints.
 
         :param target: The target pitch.
-        :param direction: The position of the new pitch relative to the target pitch.
+        :param position: The position of the new pitch relative to the target pitch.
         """
         candidates = {
             "above": target.value + (self.value - target.value) % 12,
