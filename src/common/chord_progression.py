@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Dict, Tuple, List
 from functools import cached_property
 
-from components.chord import Chord
+from common.chord import Chord
 
 
 @dataclass(frozen=True)

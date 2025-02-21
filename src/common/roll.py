@@ -3,8 +3,8 @@ from typing import Tuple, FrozenSet
 from midiutil.MidiFile import MIDIFile  # type: ignore
 from dataclasses import dataclass
 
-from components.pitch import Pitch
-from components.note import Note
+from common.pitch import Pitch
+from common.note import Note
 
 
 @dataclass

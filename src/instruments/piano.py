@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import FrozenSet
 
-from components.rolls import Roll
-from components.chord import Chord
-from components.note import Note
-from components.pitch import Pitch
-from components.interval import Interval
+from common.roll import Roll
+from common.chord import Chord
+from common.note import Note
+from common.pitch import Pitch
+from common.interval import Interval
 
 
 @dataclass
