@@ -1,8 +1,9 @@
-from typing import Literal
+from typing import Literal, Optional
 from dataclasses import dataclass
 
 from components.interval import Interval
 from transformers.pitch import PITCH_TRANSFORMER
+
 
 @dataclass(frozen=True)
 class Pitch:
@@ -11,16 +12,25 @@ class Pitch:
     """
 
     value: int
+    chord_degree: Optional[int] = None
+    # TODO: add scale degree?
 
     @classmethod
-    def from_str(cls, value: str) -> "Pitch":
-        return cls(PITCH_TRANSFORMER.from_str(value))
+    def from_str(
+        cls,
+        value: str,
+        chord_degree: Optional[int] = None,
+    ) -> "Pitch":
+        return cls(
+            value=PITCH_TRANSFORMER.from_str(value),
+            chord_degree=chord_degree,
+        )
 
     def __add__(self, val: Interval) -> "Pitch":
-        return Pitch(self.value + val.value)
-    
+        return Pitch(self.value + val.value)  # discard `chord_degree`
+
     def __sub__(self, val: Interval) -> "Pitch":
-        return Pitch(self.value - val.value)
+        return Pitch(self.value - val.value)  # discard `chord_degree`
 
     def reoctave_near_pitch(
         self,
@@ -42,4 +52,4 @@ class Pitch:
             if candidates["above"] - target.value > target.value - candidates["below"]
             else candidates["above"]
         )
-        return Pitch(candidates[position])
+        return Pitch(candidates[position], chord_degree=self.chord_degree)

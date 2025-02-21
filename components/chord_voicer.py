@@ -1,31 +1,101 @@
 from abc import ABC, abstractmethod
-from typing import FrozenSet
+from dataclasses import dataclass
+from typing import FrozenSet, List, Dict, Callable
 
-
-from components.chord import Chord
+from components.chord import Chord, ChordQuality
+from components.chord_progression import ChordProgression
 from components.pitch import Pitch
+
+
+ChordVoicerMemo = Dict[int, FrozenSet[Pitch]]
+
+
+@dataclass(frozen=True)
+class ChordVoicerInstruction:
+    condition: Callable[
+        [int, Chord],  # index, chord
+        bool,  # run action?
+    ]
+    action: Callable[
+        [ChordVoicerMemo, int, Chord],  # (memo, index, chord)
+        FrozenSet[Pitch],  # pitch set
+    ]
 
 
 class ChordVoicer(ABC):
 
+    @classmethod
     @abstractmethod
-    def voice(self, chord: Chord) -> FrozenSet[Pitch]:
+    def get_instructions(
+        cls,
+        chord_progression: ChordProgression,
+    ) -> List[ChordVoicerInstruction]:
         pass
+
+    @classmethod
+    def generate(cls, chord_progression: ChordProgression) -> List[FrozenSet[Pitch]]:
+        memo: ChordVoicerMemo = dict()
+        for instruction in cls.get_instructions(chord_progression):
+            for index, chord_at_time in enumerate(chord_progression.chords):
+                chord = chord_at_time.chord
+                if instruction.condition(index, chord):
+                    memo[index] = instruction.action(memo, index, chord)
+        return [memo[i] for i in range(len(chord_progression.chords))]
 
 
 class BlockChordVoicer(ChordVoicer):
 
-    def voice(self, chord: Chord) -> FrozenSet[Pitch]:
+    @classmethod
+    def get_instructions(
+        cls,
+        chord_progression: ChordProgression,
+    ) -> List[ChordVoicerInstruction]:
 
-        # if chord.quality == ChordQuality.Dom7 and next is not None:
-        #     next_pitch_set = next
-        #     next_tones = {
-        #         1: filter(lambda x: x[1].scale_tone == 1, next_pitch_set),
-        #         3: filter(lambda x: x[1].scale_tone == 3, next_pitch_set),
-        #     }
-        #     print(next_tones)
+        def is_default_chord(index: int, chord: Chord) -> bool:
+            return not is_resolvable_dominant_chord(index, chord)
 
-        target = Pitch.from_str("C5")
-        return frozenset(
-            [pitch.reoctave_near_pitch(target) for pitch, _ in chord.get_pitches()]
-        )
+        def voice_default_chord(
+            memo: ChordVoicerMemo,
+            index: int,
+            chord: Chord,
+        ) -> FrozenSet[Pitch]:
+            target_pitch = Pitch.from_str("D4")
+            return frozenset(
+                [
+                    pitch.reoctave_near_pitch(target_pitch)
+                    for pitch in chord.get_pitches()
+                ]
+            )
+
+        def is_resolvable_dominant_chord(index: int, chord: Chord) -> bool:
+            if chord.quality is not ChordQuality.Dom7:  # must be dominant chord
+                return False
+            if index == len(chord_progression.chords) - 1:  # cannot be last chord
+                return False
+            return True
+
+        def voice_resolvable_dominant_chord(
+            memo: ChordVoicerMemo,
+            index: int,
+            chord: Chord,
+        ) -> FrozenSet[Pitch]:
+            current_tones = {pitch.chord_degree: pitch for pitch in chord.get_pitches()}
+            next_tones = {pitch.chord_degree: pitch for pitch in memo[index + 1]}
+            return frozenset(
+                [
+                    current_tones[3].reoctave_near_pitch(next_tones[1]),
+                    current_tones[7].reoctave_near_pitch(next_tones[3]),
+                    current_tones[1].reoctave_near_pitch(next_tones[5]),
+                ]
+            )
+
+        return [
+            ChordVoicerInstruction(
+                condition=is_default_chord,
+                action=voice_default_chord,
+            ),
+            ChordVoicerInstruction(
+                condition=is_resolvable_dominant_chord,
+                action=voice_resolvable_dominant_chord,
+            ),
+        ]

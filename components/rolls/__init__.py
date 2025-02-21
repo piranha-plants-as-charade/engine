@@ -1,3 +1,4 @@
+import math
 from typing import Tuple, FrozenSet
 from midiutil.MidiFile import MIDIFile  # type: ignore
 from dataclasses import dataclass
@@ -67,6 +68,7 @@ class Roll:
         time = 0  # start at the beginning
         file.addTrackName(track, time, "Sample Track")  # type: ignore
         file.addTempo(track, time, self.beats_per_minute)  # type: ignore
+        file.addTimeSignature(track, time, self.beats_per_measure, math.floor(math.sqrt(self.beat_duration)), 24)  # type: ignore
         # TODO: add time signature
 
         # add some notes

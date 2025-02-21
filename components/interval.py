@@ -11,17 +11,18 @@ class Interval:
     """
 
     value: int
-    chord_tone: Optional[int] = None
+    chord_degree: Optional[int] = None
+    # TODO: add scale degree?
 
     @classmethod
     def from_str(
         cls,
         value: str,
-        chord_tone: Optional[int] = None,
+        chord_degree: Optional[int] = None,
     ) -> "Interval":
         return cls(
             value=INTERVAL_TRANSFORMER.from_str(value),
-            chord_tone=chord_tone,
+            chord_degree=chord_degree,
         )
 
     def __add__(self, val: "Interval") -> "Interval":
