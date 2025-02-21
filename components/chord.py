@@ -15,24 +15,24 @@ class ChordQuality(Enum):
 
     Maj = ChordStructure(
         intervals=(
-            Interval.from_str("1", chord_tone=1),
-            Interval.from_str("3", chord_tone=3),
-            Interval.from_str("5", chord_tone=5),
+            Interval.from_str("1", chord_degree=1),
+            Interval.from_str("3", chord_degree=3),
+            Interval.from_str("5", chord_degree=5),
         )
     )
     Min = ChordStructure(
         intervals=(
-            Interval.from_str("1", chord_tone=1),
-            Interval.from_str("b3", chord_tone=3),
-            Interval.from_str("5", chord_tone=5),
+            Interval.from_str("1", chord_degree=1),
+            Interval.from_str("b3", chord_degree=3),
+            Interval.from_str("5", chord_degree=5),
         )
     )
     Dom7 = ChordStructure(
         intervals=(
-            Interval.from_str("1", chord_tone=1),
-            Interval.from_str("3", chord_tone=3),
-            Interval.from_str("5", chord_tone=5),
-            Interval.from_str("b7", chord_tone=7),
+            Interval.from_str("1", chord_degree=1),
+            Interval.from_str("3", chord_degree=3),
+            Interval.from_str("5", chord_degree=5),
+            Interval.from_str("b7", chord_degree=7),
         )
     )
 
@@ -54,7 +54,7 @@ class Chord:
     def get_pitches(self) -> FrozenSet[Pitch]:
         return frozenset(
             [
-                Pitch((self.root + iv).value, chord_tone=iv.chord_tone)
+                Pitch((self.root + iv).value, chord_degree=iv.chord_degree)
                 for iv in self.quality.value.intervals
             ]
         )

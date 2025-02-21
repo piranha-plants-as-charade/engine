@@ -12,24 +12,25 @@ class Pitch:
     """
 
     value: int
-    chord_tone: Optional[int] = None
+    chord_degree: Optional[int] = None
+    # TODO: add scale degree?
 
     @classmethod
     def from_str(
         cls,
         value: str,
-        chord_tone: Optional[int] = None,
+        chord_degree: Optional[int] = None,
     ) -> "Pitch":
         return cls(
             value=PITCH_TRANSFORMER.from_str(value),
-            chord_tone=chord_tone,
+            chord_degree=chord_degree,
         )
 
     def __add__(self, val: Interval) -> "Pitch":
-        return Pitch(self.value + val.value)  # discard `chord_tone`
+        return Pitch(self.value + val.value)  # discard `chord_degree`
 
     def __sub__(self, val: Interval) -> "Pitch":
-        return Pitch(self.value - val.value)  # discard `chord_tone`
+        return Pitch(self.value - val.value)  # discard `chord_degree`
 
     def reoctave_near_pitch(
         self,
@@ -51,4 +52,4 @@ class Pitch:
             if candidates["above"] - target.value > target.value - candidates["below"]
             else candidates["above"]
         )
-        return Pitch(candidates[position], chord_tone=self.chord_tone)
+        return Pitch(candidates[position], chord_degree=self.chord_degree)

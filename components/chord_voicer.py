@@ -79,8 +79,8 @@ class BlockChordVoicer(ChordVoicer):
             index: int,
             chord: Chord,
         ) -> FrozenSet[Pitch]:
-            current_tones = {pitch.chord_tone: pitch for pitch in chord.get_pitches()}
-            next_tones = {pitch.chord_tone: pitch for pitch in memo[index + 1]}
+            current_tones = {pitch.chord_degree: pitch for pitch in chord.get_pitches()}
+            next_tones = {pitch.chord_degree: pitch for pitch in memo[index + 1]}
             return frozenset(
                 [
                     current_tones[3].reoctave_near_pitch(next_tones[1]),
