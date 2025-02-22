@@ -1,28 +1,21 @@
 from __future__ import annotations  # avoid circular dependency
 
 import math
-from typing import FrozenSet, List
+from abc import ABC, abstractmethod
+from typing import FrozenSet, List, Any
 from midiutil.MidiFile import MIDIFile  # type: ignore
-from dataclasses import dataclass
 
 import common.roll as roll  # standard import to avoid circular dependency
 from common.pitch import Pitch
 from common.note import Note
 
 
-@dataclass
-class Instrument:
-
-    name: str
+class Instrument(ABC):
 
     def __init__(self, parent: roll.Roll, name: str):
         self._parent = parent
-        self.name = name
+        self._name = name
         self._notes: List[Note] = list()
-
-    @property
-    def parent(self):
-        return self._parent
 
     @property
     def notes(self) -> List[Note]:
@@ -43,22 +36,26 @@ class Instrument:
         pitches = [note.pitch for note in self.notes if note.start <= time < note.end]
         return frozenset(pitches)
 
+    @abstractmethod
+    def generate(self, *args: Any, **kwargs: Any):
+        pass
+
     # TODO: replace with something better
     def to_midi(self) -> MIDIFile:
         file = MIDIFile(
             numTracks=1,
-            ticks_per_quarternote=self.parent.quantization,
+            ticks_per_quarternote=self._parent.quantization,
         )
         track = 0  # the only track
 
         time = 0  # start at the beginning
         file.addTrackName(track, time, "Sample Track")  # type: ignore
-        file.addTempo(track, time, self.parent.beats_per_minute)  # type: ignore
+        file.addTempo(track, time, self._parent.beats_per_minute)  # type: ignore
         file.addTimeSignature(  # type: ignore
             track,
             time,
-            self.parent.beats_per_measure,
-            math.floor(math.sqrt(self.parent.beat_duration)),
+            self._parent.beats_per_measure,
+            math.floor(math.sqrt(self._parent.beat_duration)),
             24,
         )
         # TODO: add time signature
@@ -66,7 +63,7 @@ class Instrument:
         # add some notes
         channel = 0
         volume = 100
-        time_scale = self.parent.beat_duration / self.parent.quantization
+        time_scale = self._parent.beat_duration / self._parent.quantization
 
         for note in self.notes:
             file.addNote(  # type: ignore

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from common.pitch import Pitch
 
 
-@dataclass
+@dataclass(frozen=True)
 class Note:
     """
     The representation for a note in `common.Roll`.

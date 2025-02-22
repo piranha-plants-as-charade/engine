@@ -1,12 +1,10 @@
 from __future__ import annotations  # avoid circular dependency
 
-from dataclasses import dataclass
 from typing import Tuple, Dict, List
 
 import instruments.base as instrument  # standard import to avoid circular dependency
 
 
-@dataclass
 class Roll:
     """
     The representation for a song.

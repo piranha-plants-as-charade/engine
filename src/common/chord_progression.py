@@ -12,13 +12,15 @@ class ChordAtTime:
     end_time: int
 
 
-@dataclass
 class ChordProgression:
 
     def __init__(self, start_time: int, end_time: int):
         self._start_time = start_time
         self._end_time = end_time
         self._chords: Dict[int, Chord] = dict()
+
+    def __len__(self):
+        return len(self.chords)
 
     @property
     def start_time(self):
@@ -44,19 +46,18 @@ class ChordProgression:
             for i, (start_time, chord) in enumerate(sorted_chords)
         ]
 
-    def clear_chords_cache(self):
-        try:
-            del self.chords
-        except:
-            pass
-
     def add_chords(self, *chords: Tuple[Chord, int]):
         """
         TODO
         """
         for chord, time in chords:
-            assert (
-                self.start_time <= time < self.end_time
-            )  # time must be in chord progression time range
+            # time must be in chord progression time range
+            assert self.start_time <= time < self.end_time
             self._chords[time] = chord
-        self.clear_chords_cache()
+        self._clear_chords_cache()
+
+    def _clear_chords_cache(self):
+        try:
+            del self.chords
+        except:
+            pass
