@@ -1,13 +1,10 @@
-import math
-from typing import Tuple, FrozenSet
-from midiutil.MidiFile import MIDIFile  # type: ignore
-from dataclasses import dataclass
+from __future__ import annotations  # avoid circular dependency
 
-from common.pitch import Pitch
-from common.note import Note
+from typing import Tuple, Dict, List
+
+import instruments.base as instrument  # standard import to avoid circular dependency
 
 
-@dataclass
 class Roll:
     """
     The representation for a song.
@@ -17,12 +14,16 @@ class Roll:
     :param time_signature: The time signature of the song.
     """
 
-    beats_per_minute: int
-    quantization: int = 16
-    time_signature: Tuple[int, int] = (4, 4)
-
-    def __post_init__(self):
-        self.__notes: Tuple[Note, ...] = tuple()
+    def __init__(
+        self,
+        beats_per_minute: int,
+        quantization: int = 16,
+        time_signature: Tuple[int, int] = (4, 4),
+    ):
+        self._beats_per_minute = beats_per_minute
+        self._quantization = quantization
+        self._time_signature = time_signature
+        self._instruments: Dict[str, instrument.Instrument] = dict()
 
     def Duration(self, duration: float) -> int:
         return round(duration / self.beat_duration * self.quantization)
@@ -31,58 +32,33 @@ class Roll:
         return self.Duration((measure * self.beats_per_measure + beat))
 
     @property
+    def beats_per_minute(self):
+        return self._beats_per_minute
+
+    @property
+    def quantization(self):
+        return self._quantization
+
+    @property
     def beats_per_measure(self):
-        return self.time_signature[0]
+        return self._time_signature[0]
 
     @property
     def beat_duration(self):
-        return self.time_signature[1]
+        return self._time_signature[1]
 
-    @property
-    def notes(self) -> Tuple[Note, ...]:
-        return self.__notes
+    def get_instrument(self, name: str) -> instrument.Instrument:
+        assert name in self._instruments
+        return self._instruments[name]
 
-    def add_notes(self, *notes: Note):
-        """
-        Adds notes to the roll.
+    def get_instruments(self) -> List[instrument.Instrument]:
+        return list(self._instruments.values())
 
-        :param notes: A single note or a list of notes.
-        """
-        self.__notes = self.__notes + notes
-
-    def get_pitches_at_time(self, time: int) -> FrozenSet[Pitch]:
-        """
-        Retrieves the existing pitches that cross the given time. Pitches that end at `time` are not retrieved.
-        """
-        pitches = [note.pitch for note in self.notes if note.start <= time < note.end]
-        return frozenset(pitches)
-
-    # TODO: replace with something better
-    def to_midi(self) -> MIDIFile:
-        file = MIDIFile(
-            numTracks=1,
-            ticks_per_quarternote=self.quantization,
-        )
-        track = 0  # the only track
-
-        time = 0  # start at the beginning
-        file.addTrackName(track, time, "Sample Track")  # type: ignore
-        file.addTempo(track, time, self.beats_per_minute)  # type: ignore
-        file.addTimeSignature(track, time, self.beats_per_measure, math.floor(math.sqrt(self.beat_duration)), 24)  # type: ignore
-        # TODO: add time signature
-
-        # add some notes
-        channel = 0
-        volume = 100
-
-        for note in self.notes:
-            file.addNote(  # type: ignore
-                track,
-                channel,
-                note.pitch.value,
-                note.start / self.quantization * self.beat_duration,
-                note.duration / self.quantization * self.beat_duration,
-                volume,
-            )
-
-        return file
+    def add_instrument(
+        self,
+        name: str,
+        type: type[instrument.Instrument],
+    ) -> instrument.Instrument:
+        assert name not in self._instruments
+        self._instruments[name] = type(parent=self, name=name)
+        return self.get_instrument(name)
