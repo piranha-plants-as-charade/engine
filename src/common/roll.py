@@ -2,7 +2,7 @@ from __future__ import annotations  # avoid circular dependency
 
 from typing import Tuple, Dict, List
 
-import instruments.base as instrument  # standard import to avoid circular dependency
+import generation.instruments.base as instrument  # standard import to avoid circular dependency
 
 
 class Roll:
