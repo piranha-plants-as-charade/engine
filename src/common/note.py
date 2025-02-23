@@ -1,7 +1,6 @@
 from typing import Literal
 from dataclasses import dataclass
 
-
 from common.pitch import Pitch
 
 

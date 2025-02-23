@@ -2,6 +2,7 @@ from typing import FrozenSet, List
 
 from common.chord import ChordQuality
 from common.pitch import Pitch
+
 from generation.chord_voicer import (
     ChordVoicer,
     ChordInChordProgression,

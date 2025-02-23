@@ -5,9 +5,10 @@ from abc import ABC, abstractmethod
 from typing import FrozenSet, List, Any
 from midiutil.MidiFile import MIDIFile  # type: ignore
 
-import common.roll as roll  # standard import to avoid circular dependency
 from common.pitch import Pitch
 from common.note import Note
+
+import generation.roll as roll  # standard import to avoid circular dependency
 
 
 class Instrument(ABC):

@@ -1,10 +1,11 @@
 from typing import FrozenSet
 
-from common.roll import Roll
 from common.chord import Chord
 from common.note import Note
 from common.pitch import Pitch
 from common.interval import Interval
+
+from generation.roll import Roll
 from generation.instruments.base import Instrument
 from generation.chord_progression import ChordProgression
 
