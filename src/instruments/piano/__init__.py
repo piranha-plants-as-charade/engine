@@ -7,7 +7,8 @@ from common.chord_progression import ChordProgression
 from common.note import Note
 from common.pitch import Pitch
 from common.interval import Interval
-from common.chord_voicer import BlockChordVoicer
+
+from .chord_voicer import PianoChordVoicer
 
 
 class Piano(Instrument):
@@ -16,7 +17,7 @@ class Piano(Instrument):
         super().__init__(parent, name)
 
     def generate(self, chord_progression: ChordProgression):
-        chord_voicings = BlockChordVoicer.generate(chord_progression)
+        chord_voicings = PianoChordVoicer.generate(chord_progression)
         for i, chord in enumerate(chord_progression.chords):
             self._add_stride_pattern(
                 chord.chord,
