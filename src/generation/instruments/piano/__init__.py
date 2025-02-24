@@ -6,8 +6,8 @@ from common.structures.note import Note
 from common.structures.pitch import Pitch
 from common.structures.interval import Interval
 
-from generation.instruments.base import Instrument
 from generation.chord_progression import ChordProgression
+from generation.instruments.base import Instrument
 
 from .chord_voicer import PianoChordVoicer
 
