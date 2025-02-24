@@ -4,7 +4,7 @@ from common.structures.note import Note
 from common.structures.pitch import Pitch
 
 
-class NoteSequence:
+class NoteCollection:
 
     def __init__(self):
         self._notes: List[Note] = list()

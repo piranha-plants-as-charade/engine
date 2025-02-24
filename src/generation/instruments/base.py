@@ -6,7 +6,7 @@ from typing import Any
 from midiutil.MidiFile import MIDIFile  # type: ignore
 
 import common.roll as roll  # standard import to avoid circular dependency
-from common.note_sequence import NoteSequence
+from common.note_collection import NoteCollection
 
 
 class Instrument(ABC):
@@ -14,7 +14,7 @@ class Instrument(ABC):
     def __init__(self, parent: roll.Roll, name: str):
         self._parent = parent
         self._name = name
-        self._notes = NoteSequence()
+        self._notes = NoteCollection()
 
     @property
     def notes(self):
