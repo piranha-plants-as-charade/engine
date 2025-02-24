@@ -36,7 +36,7 @@ class Piano(Instrument):
     ):
         for i, time in enumerate(range(start, end)):
             if i % 8 == 0:
-                self.add_notes(
+                self.notes.add(
                     Note(
                         pitch=chord.root,
                         start=time,
@@ -44,10 +44,10 @@ class Piano(Instrument):
                     ).reoctave_near_pitch(Pitch.from_str("C3"))
                 )
             elif i % 8 == 4:
-                prev_pitch_set = self.get_pitches_at_time(
+                prev_pitch_set = self.notes.get_pitches_at_time(
                     time - self._parent.Duration(1)
                 )
-                self.add_notes(
+                self.notes.add(
                     Note(
                         pitch=chord.root + Interval.from_str("5"),
                         start=time,
@@ -58,7 +58,7 @@ class Piano(Instrument):
                     )
                 )
             elif i % 4 == 2:
-                self.add_notes(
+                self.notes.add(
                     *[
                         Note(
                             pitch=pitch,
