@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from transformers.pitch import PITCH_TRANSFORMER
 
-from common.interval import Interval
+from common.structures.interval import Interval
 
 
 @dataclass(frozen=True)

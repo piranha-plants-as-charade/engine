@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import List, FrozenSet
 
-from common.note import Note
-from common.pitch import Pitch
+from common.structures.note import Note
+from common.structures.pitch import Pitch
 
 
 @dataclass

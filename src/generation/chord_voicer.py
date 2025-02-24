@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import FrozenSet, List, Dict, Callable
 
-from common.pitch import Pitch
+from common.structures.pitch import Pitch
 
 from generation.chord_progression import ChordProgression
 

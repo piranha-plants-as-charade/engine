@@ -1,7 +1,7 @@
 from typing import FrozenSet, List
 
-from common.chord import ChordQuality
-from common.pitch import Pitch
+from common.structures.chord import ChordQuality
+from common.structures.pitch import Pitch
 
 from generation.chord_voicer import (
     ChordVoicer,

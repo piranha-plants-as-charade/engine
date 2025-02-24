@@ -5,9 +5,8 @@ from abc import ABC, abstractmethod
 from typing import Any
 from midiutil.MidiFile import MIDIFile  # type: ignore
 
+import common.roll as roll  # standard import to avoid circular dependency
 from common.note_sequence import NoteSequence
-
-import generation.roll as roll  # standard import to avoid circular dependency
 
 
 class Instrument(ABC):
