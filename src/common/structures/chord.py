@@ -2,8 +2,8 @@ from enum import Enum
 from dataclasses import dataclass
 from typing import Tuple, FrozenSet
 
-from common.pitch import Pitch
-from common.interval import Interval
+from common.structures.pitch import Pitch
+from common.structures.interval import Interval
 
 
 @dataclass(frozen=True)

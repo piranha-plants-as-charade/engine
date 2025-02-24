@@ -1,8 +1,9 @@
 from typing import Literal, Optional
 from dataclasses import dataclass
 
-from common.interval import Interval
 from transformers.pitch import PITCH_TRANSFORMER
+
+from common.structures.interval import Interval
 
 
 @dataclass(frozen=True)

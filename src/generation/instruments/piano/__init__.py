@@ -1,12 +1,13 @@
 from typing import FrozenSet
 
-from instruments.base import Instrument
 from common.roll import Roll
-from common.chord import Chord
-from common.chord_progression import ChordProgression
-from common.note import Note
-from common.pitch import Pitch
-from common.interval import Interval
+from common.structures.chord import Chord
+from common.structures.note import Note
+from common.structures.pitch import Pitch
+from common.structures.interval import Interval
+
+from generation.chord_progression import ChordProgression
+from generation.instruments.base import Instrument
 
 from .chord_voicer import PianoChordVoicer
 
@@ -35,7 +36,7 @@ class Piano(Instrument):
     ):
         for i, time in enumerate(range(start, end)):
             if i % 8 == 0:
-                self.add_notes(
+                self.notes.add(
                     Note(
                         pitch=chord.root,
                         start=time,
@@ -43,10 +44,10 @@ class Piano(Instrument):
                     ).reoctave_near_pitch(Pitch.from_str("C3"))
                 )
             elif i % 8 == 4:
-                prev_pitch_set = self.get_pitches_at_time(
+                prev_pitch_set = self.notes.get_pitches_at_time(
                     time - self._parent.Duration(1)
                 )
-                self.add_notes(
+                self.notes.add(
                     Note(
                         pitch=chord.root + Interval.from_str("5"),
                         start=time,
@@ -57,7 +58,7 @@ class Piano(Instrument):
                     )
                 )
             elif i % 4 == 2:
-                self.add_notes(
+                self.notes.add(
                     *[
                         Note(
                             pitch=pitch,

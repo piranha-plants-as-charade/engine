@@ -1,13 +1,14 @@
 from typing import FrozenSet, List
 
-from common.chord_voicer import (
+from common.structures.chord import ChordQuality
+from common.structures.pitch import Pitch
+
+from generation.chord_voicer import (
     ChordVoicer,
     ChordInChordProgression,
     ChordVoicerMemo,
     ChordVoicerInstruction,
 )
-from common.chord import ChordQuality
-from common.pitch import Pitch
 
 
 class PianoChordVoicer(ChordVoicer):

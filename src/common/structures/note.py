@@ -1,8 +1,7 @@
 from typing import Literal
 from dataclasses import dataclass
 
-
-from common.pitch import Pitch
+from common.structures.pitch import Pitch
 
 
 @dataclass(frozen=True)

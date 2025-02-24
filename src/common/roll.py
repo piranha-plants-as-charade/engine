@@ -2,7 +2,7 @@ from __future__ import annotations  # avoid circular dependency
 
 from typing import Tuple, Dict, List
 
-import instruments.base as instrument  # standard import to avoid circular dependency
+import generation.instruments.base as instrument  # standard import to avoid circular dependency
 
 
 class Roll:
@@ -51,7 +51,7 @@ class Roll:
         assert name in self._instruments
         return self._instruments[name]
 
-    def get_instruments(self) -> List[instrument.Instrument]:
+    def list_instruments(self) -> List[instrument.Instrument]:
         return list(self._instruments.values())
 
     def add_instrument(
