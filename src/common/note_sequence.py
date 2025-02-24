@@ -1,11 +1,9 @@
-from dataclasses import dataclass
 from typing import List, FrozenSet
 
 from common.structures.note import Note
 from common.structures.pitch import Pitch
 
 
-@dataclass
 class NoteSequence:
 
     def __init__(self):
