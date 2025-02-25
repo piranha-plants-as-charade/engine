@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import FrozenSet, List, Dict, Callable
 
 from common.structures.pitch import Pitch
+from common.structures.chord import Chord
 
 from generation.chord_progression import ChordProgression
 
@@ -20,7 +21,7 @@ class ChordInChordProgression:
         assert 0 <= self.index < len(self.chord_progression)
 
     @property
-    def chord(self):
+    def chord(self) -> Chord:
         return self.chord_progression.chords[self.index].chord
 
 

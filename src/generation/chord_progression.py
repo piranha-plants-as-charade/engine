@@ -23,11 +23,11 @@ class ChordProgression:
         return len(self.chords)
 
     @property
-    def start_time(self):
+    def start_time(self) -> int:
         return self._start_time
 
     @property
-    def end_time(self):
+    def end_time(self) -> int:
         return self._end_time
 
     @cached_property

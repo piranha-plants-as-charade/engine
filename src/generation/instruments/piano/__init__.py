@@ -16,6 +16,10 @@ class Piano(Instrument):
 
     def __init__(self, parent: Roll, name: str):
         super().__init__(parent, name)
+    
+    @property
+    def midi_id(self) -> int:
+        return 0  # acoustic grand
 
     def generate(self, chord_progression: ChordProgression):
         chord_voicings = PianoChordVoicer.generate(chord_progression)

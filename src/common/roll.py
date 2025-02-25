@@ -1,6 +1,8 @@
 from __future__ import annotations  # avoid circular dependency
 
-from typing import Tuple, Dict, List
+import math
+from typing import Tuple, Dict, List, Type
+from midiutil.MidiFile import MIDIFile  # type: ignore
 
 import generation.instruments.base as instrument  # standard import to avoid circular dependency
 
@@ -32,19 +34,19 @@ class Roll:
         return self.Duration((measure * self.beats_per_measure + beat))
 
     @property
-    def beats_per_minute(self):
+    def beats_per_minute(self) -> int:
         return self._beats_per_minute
 
     @property
-    def quantization(self):
+    def quantization(self) -> int:
         return self._quantization
 
     @property
-    def beats_per_measure(self):
+    def beats_per_measure(self) -> int:
         return self._time_signature[0]
 
     @property
-    def beat_duration(self):
+    def beat_duration(self) -> int:
         return self._time_signature[1]
 
     def get_instrument(self, name: str) -> instrument.Instrument:
@@ -57,8 +59,45 @@ class Roll:
     def add_instrument(
         self,
         name: str,
-        type: type[instrument.Instrument],
+        type: Type[instrument.Instrument],
     ) -> instrument.Instrument:
         assert name not in self._instruments
         self._instruments[name] = type(parent=self, name=name)
         return self.get_instrument(name)
+
+    def to_midi(self) -> MIDIFile:
+
+        instruments = self.list_instruments()
+
+        file = MIDIFile(
+            numTracks=len(instruments),
+            ticks_per_quarternote=self.quantization,
+        )
+
+        for track, instrument in enumerate(instruments):
+            time = 0  # start at the beginning
+            channel = track
+
+            file.addTrackName(track, time, instrument.name)  # type: ignore
+            file.addTempo(track, time, self.beats_per_minute)  # type: ignore
+            file.addTimeSignature(  # type: ignore
+                track,
+                time,
+                self.beats_per_measure,
+                math.floor(math.sqrt(self.beat_duration)),
+                24,
+            )
+            file.addProgramChange(track, channel, time, instrument.midi_id)  # type: ignore
+
+            time_scale = self.beat_duration / self.quantization
+            for note in instrument.notes.list():
+                file.addNote(  # type: ignore
+                    track,
+                    channel,
+                    note.pitch.value,
+                    note.start * time_scale,
+                    note.duration * time_scale,
+                    100,
+                )
+
+        return file
