@@ -34,29 +34,33 @@ class VoiceSampleLibrary:
         src = os.path.join("../data", config.src)
         for timbre_file in os.listdir(src):
             try:
-                timbre = timbre_file.split(".")[0]
-                y, fs = librosa.load(  # type: ignore
-                    os.path.join(src, timbre_file),
-                    sr=config.sample_rate,
-                )
-                y: NDArray[np.float32]
-
-                def splice_audio(index: int) -> NDArray[np.float32]:
-                    def helper(position: float) -> int:
-                        return int(fs * 60 / config.beats_per_minute * position)
-
-                    start = helper(index + config.sample_window[0])
-                    end = helper(index + config.sample_window[1])
-                    return y[start:end]
-
-                for i, pitch_value in enumerate(
-                    range(config.range[0].value, config.range[1].value + 1)
-                ):
-                    self._data[(timbre, Pitch(pitch_value))] = splice_audio(i)
+                self._load_file(os.path.join(src, timbre_file))
                 print(f"Loaded {timbre_file}.")
             except:
                 print(f"Failed to load {timbre_file}.")
-                continue
+
+    def _load_file(self, path: str):
+        timbre = os.path.basename(path).split(".")[0]
+        # throws an exception if load failed
+        data: NDArray[np.float32] = librosa.load(  # type: ignore
+            path,
+            sr=self.sample_rate,
+            dtype=np.float32,
+        )[0]
+
+        def splice_file(index: int) -> NDArray[np.float32]:
+            def helper(position: float) -> int:
+                m = self.sample_rate * 60 / self._config.beats_per_minute
+                return int(m * position)
+
+            start = helper(index + self._config.sample_window[0])
+            end = helper(index + self._config.sample_window[1])
+            return data[start:end]
+
+        for i, pitch_value in enumerate(
+            range(self._config.range[0].value, self._config.range[1].value + 1)
+        ):
+            self._data[(timbre, Pitch(pitch_value))] = splice_file(i)
 
     @property
     def sample_rate(self) -> int:
