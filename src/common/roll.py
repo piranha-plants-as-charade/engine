@@ -68,17 +68,25 @@ class Roll:
     def to_midi(self) -> MIDIFile:
 
         instruments = self.list_instruments()
+        midi_instruments = list(
+            filter(
+                lambda ins: type(ins.export_data) is instrument.MIDIInstrumentExportData,
+                instruments,
+            )
+        )
 
         file = MIDIFile(
-            numTracks=len(instruments),
+            numTracks=len(midi_instruments),
             ticks_per_quarternote=self.quantization,
         )
 
-        for track, instrument in enumerate(instruments):
+        for track, ins in enumerate(midi_instruments):
+            assert type(ins.export_data) is instrument.MIDIInstrumentExportData
+            ins_id = ins.export_data.instrument_id
             time = 0  # start at the beginning
             channel = track
 
-            file.addTrackName(track, time, instrument.name)  # type: ignore
+            file.addTrackName(track, time, ins.name)  # type: ignore
             file.addTempo(track, time, self.beats_per_minute)  # type: ignore
             file.addTimeSignature(  # type: ignore
                 track,
@@ -87,10 +95,10 @@ class Roll:
                 math.floor(math.sqrt(self.beat_duration)),
                 24,
             )
-            file.addProgramChange(track, channel, time, instrument.midi_id)  # type: ignore
+            file.addProgramChange(track, channel, time, ins_id)  # type: ignore
 
             time_scale = self.beat_duration / self.quantization
-            for note in instrument.notes.list():
+            for note in ins.notes.list():
                 file.addNote(  # type: ignore
                     track,
                     channel,

@@ -31,7 +31,7 @@ class VoiceSampleLibrary:
 
     def __init__(self, config: VoiceSampleLibraryConfig):
         self._config = config
-        src = os.path.join("../data", config.src)
+        src = os.path.join("../data/samples", config.src)
         for timbre_file in os.listdir(src):
             try:
                 self._load_file(os.path.join(src, timbre_file))

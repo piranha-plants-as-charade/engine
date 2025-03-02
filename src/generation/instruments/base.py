@@ -1,11 +1,24 @@
 from __future__ import annotations  # avoid circular dependency
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any
-from midiutil.MidiFile import MIDIFile  # type: ignore
 
 import common.roll as roll  # standard import to avoid circular dependency
 from common.note_collection import NoteCollection
+
+
+@dataclass(frozen=True)
+class MIDIInstrumentExportData:
+    instrument_id: int
+
+
+@dataclass(frozen=True)
+class SampleInstrumentExportData:
+    sample_src: str
+
+
+InstrumentExportData = MIDIInstrumentExportData | SampleInstrumentExportData
 
 
 class Instrument(ABC):
@@ -25,7 +38,7 @@ class Instrument(ABC):
 
     @property
     @abstractmethod
-    def midi_id(self) -> int:
+    def export_data(self) -> InstrumentExportData:
         pass
 
     @abstractmethod

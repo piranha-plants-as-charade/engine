@@ -7,7 +7,11 @@ from common.structures.pitch import Pitch
 from common.structures.interval import Interval
 
 from generation.chord_progression import ChordProgression
-from generation.instruments.base import Instrument
+from generation.instruments.base import (
+    Instrument,
+    InstrumentExportData,
+    MIDIInstrumentExportData,
+)
 
 from .chord_voicer import PianoChordVoicer
 
@@ -16,10 +20,12 @@ class Piano(Instrument):
 
     def __init__(self, parent: Roll, name: str):
         super().__init__(parent, name)
-    
+
     @property
-    def midi_id(self) -> int:
-        return 0  # acoustic grand
+    def export_data(self) -> InstrumentExportData:
+        return MIDIInstrumentExportData(
+            instrument_id=1,  # acoustic grand
+        )
 
     def generate(self, chord_progression: ChordProgression):
         chord_voicings = PianoChordVoicer.generate(chord_progression)
