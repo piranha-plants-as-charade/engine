@@ -20,7 +20,7 @@ class VoiceSampleLibraryConfig:
 
     src: str
     sample_rate: int = 44100
-    range: Tuple[Pitch, Pitch] = (Pitch.from_str("C3"), Pitch.from_str("G5"))
+    range: Tuple[Pitch, Pitch] = (Pitch.from_str("C3"), Pitch.from_str("G6"))
     beats_per_minute: int = 60
     sample_window: Tuple[float, float] = (0, 0.875)
 
