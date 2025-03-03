@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Tuple, Dict, Any
 from numpy.typing import NDArray
 from dotenv import dotenv_values
+from functools import cached_property
 
 from common.structures.pitch import Pitch
 
@@ -31,8 +32,28 @@ class AudioSampleManagerConfig:
 
 @dataclass(frozen=True)
 class AudioSampleEnvelope:
+    start_shift: int = -1000
     start_sample: int = 0
     end_sample: int = 38000
+
+    ease_in_factor: float = 0.1
+    ease_out_factor: float = 0.1
+
+
+@dataclass(frozen=True)
+class AudioSample:
+    audio: NDArray[np.float32]
+    envelope: AudioSampleEnvelope
+
+    @cached_property
+    def smoothened_audio(self):
+        N = len(self.audio)
+        ease_in_samples = int(N * self.envelope.ease_in_factor)
+        ease_out_samples = int(N * self.envelope.ease_out_factor)
+        window_start = np.hamming(ease_in_samples * 2)[:ease_in_samples]
+        window_end = np.hamming(ease_out_samples * 2)[ease_out_samples:]
+        window_middle = np.ones(N - len(window_start) - len(window_end))
+        return self.audio * np.concatenate([window_start, window_middle, window_end])
 
 
 class SkipFileOnSampleLoad(Exception):
@@ -41,7 +62,7 @@ class SkipFileOnSampleLoad(Exception):
 
 class AudioSampleManager:
 
-    _sample_data: Dict[Tuple[str, Pitch], NDArray[np.float32]] = dict()
+    _sample_data: Dict[Tuple[str, Pitch], AudioSample] = dict()
     _timbre_data: Dict[str, AudioSampleEnvelope] = dict()
 
     def __init__(self, config: AudioSampleManagerConfig):
@@ -99,13 +120,16 @@ class AudioSampleManager:
         for i, pitch_value in enumerate(
             range(self._config.range[0].value, self._config.range[1].value + 1)
         ):
-            self._sample_data[(timbre, Pitch(pitch_value))] = splice_file(i)
+            self._sample_data[(timbre, Pitch(pitch_value))] = AudioSample(
+                audio=splice_file(i),
+                envelope=envelope,
+            )
 
     @property
     def sample_rate(self) -> int:
         return self._config.sample_rate
 
-    def get_sample(self, timbre: str, pitch: Pitch) -> NDArray[np.float32]:
+    def get_sample(self, timbre: str, pitch: Pitch) -> AudioSample:
         return self._sample_data[(timbre, Pitch(pitch.value))]
 
     def get_random_timbre(self) -> str:

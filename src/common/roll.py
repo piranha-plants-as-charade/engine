@@ -18,11 +18,15 @@ import generation.instruments.base as instrument  # standard import to avoid cir
 class RollExportConfig:
     output_path: str
     sample_rate: int = 44100
-    midi_shift: float = 0.14  # in seconds
+    start_padding: float = 0.5  # in seconds
     soundfont_url: str = (
         "https://github.com/musescore/MuseScore/raw/refs/heads/master/share/sound/MS%20Basic.sf3"
     )
     soundfont_path: str = "../data/soundfonts/ms_basic.sf3"
+
+    @property
+    def num_start_padding_samples(self) -> int:
+        return int(self.start_padding * self.sample_rate)
 
 
 class Roll:
@@ -84,7 +88,7 @@ class Roll:
         return self.get_instrument(name)
 
     def export(self, config: RollExportConfig):
-        midi_data, sample_data = self._get_instrument_export_data(config.sample_rate)
+        midi_data, sample_data = self._get_instrument_export_data(config)
 
         # Download soundfont if missing.
         if not os.path.exists(config.soundfont_path):
@@ -111,9 +115,10 @@ class Roll:
         )[0]
 
         # Add sample WAV data onto MIDI WAV data.
-        np.insert(output, 0, np.zeros(int(config.midi_shift * config.sample_rate)))
+        output = np.insert(output, 0, np.zeros(config.num_start_padding_samples))
         for sample in sample_data:
-            # FIXME: This code caps the output to the MIDI duration. It should instead be the max between the MIDI and sample durations.
+            # FIXME: This code caps the output to the MIDI duration. It should instead be the
+            # max between the MIDI and sample durations.
             for i in range(min(len(output), len(sample))):
                 output[i] += sample[i]
 
@@ -124,7 +129,7 @@ class Roll:
 
     def _get_instrument_export_data(
         self,
-        sample_rate: int,
+        config: RollExportConfig,
     ) -> Tuple[MIDIFile, List[NDArray[np.float32]]]:
         ins_lists: DefaultDict[
             Type[instrument.InstrumentExportData],
@@ -141,7 +146,7 @@ class Roll:
             ins.add_self_to_midi_track(midi_data, track)
 
         sample_data = [
-            ins.generate_audio_from_samples(sample_rate)
+            ins.generate_audio_from_samples(config)
             for ins in ins_lists[instrument.SampleInstrumentExportData]
         ]
 

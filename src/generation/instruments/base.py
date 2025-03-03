@@ -10,7 +10,7 @@ from collections import defaultdict
 from midiutil.MidiFile import MIDIFile  # type: ignore
 
 import common.roll as roll  # standard import to avoid circular dependency
-from common.audio_sample_manager import AudioSampleManager, AudioSampleManagerConfig
+from common.audio_sample import AudioSampleManager, AudioSampleManagerConfig
 from common.note_collection import NoteCollection
 
 
@@ -51,11 +51,14 @@ class Instrument(ABC):
     def generate(self, *args: Any, **kwargs: Any):
         pass
 
-    def generate_audio_from_samples(self, sample_rate: int) -> NDArray[np.float32]:
+    def generate_audio_from_samples(
+        self,
+        config: roll.RollExportConfig,
+    ) -> NDArray[np.float32]:
         assert type(self.export_data) is SampleInstrumentExportData
 
         def roll_time_to_sample_time(time: float) -> int:
-            m = sample_rate * 60 / self._parent.beats_per_minute
+            m = config.sample_rate * 60 / self._parent.beats_per_minute
             m *= self._parent.beat_duration / self._parent.quantization
             return int(m * time)
 
@@ -67,7 +70,7 @@ class Instrument(ABC):
         for note in self.notes.list():
             timbre = sample_manager.get_random_timbre()
             sample = sample_manager.get_sample(timbre, note.pitch)
-            sample_len = len(sample)
+            sample_len = len(sample.audio)
             for i, j in enumerate(
                 range(
                     roll_time_to_sample_time(note.start),
@@ -76,7 +79,8 @@ class Instrument(ABC):
             ):
                 if i >= sample_len:
                     break
-                audio_as_dict[j] += sample[i]
+                offset = config.num_start_padding_samples + sample.envelope.start_shift
+                audio_as_dict[j + offset] += sample.smoothened_audio[i]
 
         return np.array([audio_as_dict[i] for i in range(max(audio_as_dict.keys()))])
 
