@@ -18,6 +18,7 @@ import generation.instruments.base as instrument  # standard import to avoid cir
 class RollExportConfig:
     output_path: str
     sample_rate: int = 44100
+    midi_shift: float = 0.14  # in seconds
     soundfont_url: str = (
         "https://github.com/musescore/MuseScore/raw/refs/heads/master/share/sound/MS%20Basic.sf3"
     )
@@ -110,6 +111,7 @@ class Roll:
         )[0]
 
         # Add sample WAV data onto MIDI WAV data.
+        np.insert(output, 0, np.zeros(int(config.midi_shift * config.sample_rate)))
         for sample in sample_data:
             # FIXME: This code caps the output to the MIDI duration. It should instead be the max between the MIDI and sample durations.
             for i in range(min(len(output), len(sample))):
