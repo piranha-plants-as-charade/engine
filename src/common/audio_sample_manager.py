@@ -1,15 +1,16 @@
 import os
+import random
 import librosa
 import numpy as np
 from dataclasses import dataclass
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 from numpy.typing import NDArray
 
 from common.structures.pitch import Pitch
 
 
 @dataclass(frozen=True)
-class VoiceSampleLibraryConfig:
+class AudioSampleManagerConfig:
     """
     :param src: The folder in which the sample file reside (i.e. `data/<src>`), with each file consisting of chromatic ascending notes of the same timbre.
     :param sample_rate: The sample rate at which to load each sample file.
@@ -20,16 +21,18 @@ class VoiceSampleLibraryConfig:
 
     src: str
     sample_rate: int = 44100
+    volume: float = 0.175
     range: Tuple[Pitch, Pitch] = (Pitch.from_str("C3"), Pitch.from_str("G6"))
     beats_per_minute: int = 60
     sample_window: Tuple[float, float] = (0, 0.875)
 
 
-class VoiceSampleLibrary:
+class AudioSampleManager:
 
     _data: Dict[Tuple[str, Pitch], NDArray[np.float32]] = dict()
+    _timbre_list: List[str] = list()
 
-    def __init__(self, config: VoiceSampleLibraryConfig):
+    def __init__(self, config: AudioSampleManagerConfig):
         self._config = config
         src = os.path.join("../data/samples", config.src)
         for timbre_file in os.listdir(src):
@@ -41,20 +44,22 @@ class VoiceSampleLibrary:
 
     def _load_file(self, path: str):
         timbre = os.path.basename(path).split(".")[0]
+        self._timbre_list.append(timbre)
         # throws an exception if load failed
         data: NDArray[np.float32] = librosa.load(  # type: ignore
             path,
             sr=self.sample_rate,
             dtype=np.float32,
         )[0]
+        data *= self._config.volume
 
         def splice_file(index: int) -> NDArray[np.float32]:
-            def helper(position: float) -> int:
+            def position_to_sample_time(position: float) -> int:
                 m = self.sample_rate * 60 / self._config.beats_per_minute
                 return int(m * position)
 
-            start = helper(index + self._config.sample_window[0])
-            end = helper(index + self._config.sample_window[1])
+            start = position_to_sample_time(index + self._config.sample_window[0])
+            end = position_to_sample_time(index + self._config.sample_window[1])
             return data[start:end]
 
         for i, pitch_value in enumerate(
@@ -68,3 +73,6 @@ class VoiceSampleLibrary:
 
     def get_sample(self, timbre: str, pitch: Pitch) -> NDArray[np.float32]:
         return self._data[(timbre, Pitch(pitch.value))]
+
+    def get_random_timbre(self) -> str:
+        return random.choice(self._timbre_list)
