@@ -32,19 +32,27 @@ class AudioSampleManagerConfig:
 
 @dataclass(frozen=True)
 class AudioSampleTimbreProperties:
+    """
+    :param start_shift: The number of indices to shift the audio sample by in the positive time direction.
+    :param start_sample_idx: The index of the start of the audio sample.
+    :param end_sample_idx: The index of the end of the audio sample.
+    :param ease_in_factor: The envelope's fade-in duration relative to sample's entire duration.
+    :param ease_out_factor: The envelope's fade-out duration relative to sample's entire duration.
+    """
+
     start_shift: int = 0
     start_sample_idx: int = 0
     end_sample_idx: int = 38000
-
     ease_in_factor: float = 0.03
     ease_out_factor: float = 0.1
 
     @cache
     def get_envelope(self, num_samples: int) -> NDArray[np.float32]:
-        ease_in_samples = int(num_samples * self.ease_in_factor)
-        ease_out_samples = int(num_samples * self.ease_out_factor)
-        window_start = np.hamming(ease_in_samples * 2)[:ease_in_samples]
-        window_end = np.hamming(ease_out_samples * 2)[ease_out_samples:]
+        num_ease_in_samples = int(num_samples * self.ease_in_factor)
+        num_ease_out_samples = int(num_samples * self.ease_out_factor)
+        # Creates a window that starts at 0, ramps up to 1, stays at 1, ramps down to 0.
+        window_start = np.hamming(num_ease_in_samples * 2)[:num_ease_in_samples]
+        window_end = np.hamming(num_ease_out_samples * 2)[num_ease_out_samples:]
         window_middle = np.ones(num_samples - len(window_start) - len(window_end))
         return np.concatenate(
             [window_start, window_middle, window_end],
