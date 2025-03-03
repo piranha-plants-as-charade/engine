@@ -75,13 +75,16 @@ class Instrument(ABC):
             timbre = sample_manager.get_random_timbre()
             sample = sample_manager.get_sample(timbre, note.pitch)
             sample_len = len(sample.audio)
-            sample_envelope = sample.envelope.get_window(
+            sample_envelope = sample.timbre_properties.get_envelope(
                 min(sample_len, note_range[1] - note_range[0])
             )
             for i, j in enumerate(range(*note_range)):
                 if i >= sample_len:
                     break
-                offset = config.num_start_padding_samples + sample.envelope.start_shift
+                offset = (
+                    config.num_start_padding_samples
+                    + sample.timbre_properties.start_shift
+                )
                 audio_as_dict[j + offset] += sample.audio[i] * sample_envelope[i]
 
         return np.array([audio_as_dict[i] for i in range(max(audio_as_dict.keys()))])

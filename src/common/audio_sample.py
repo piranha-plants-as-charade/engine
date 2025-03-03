@@ -31,16 +31,16 @@ class AudioSampleManagerConfig:
 
 
 @dataclass(frozen=True)
-class AudioSampleEnvelope:
+class AudioSampleTimbreProperties:
     start_shift: int = -1000
-    start_sample: int = 0
-    end_sample: int = 38000
+    start_sample_idx: int = 0
+    end_sample_idx: int = 38000
 
     ease_in_factor: float = 0.03
     ease_out_factor: float = 0.1
 
     @cache
-    def get_window(self, num_samples: int) -> NDArray[np.float32]:
+    def get_envelope(self, num_samples: int) -> NDArray[np.float32]:
         ease_in_samples = int(num_samples * self.ease_in_factor)
         ease_out_samples = int(num_samples * self.ease_out_factor)
         window_start = np.hamming(ease_in_samples * 2)[:ease_in_samples]
@@ -55,7 +55,7 @@ class AudioSampleEnvelope:
 @dataclass(frozen=True)
 class AudioSample:
     audio: NDArray[np.float32]
-    envelope: AudioSampleEnvelope
+    timbre_properties: AudioSampleTimbreProperties
 
 
 class SkipFileOnSampleLoad(Exception):
@@ -65,7 +65,7 @@ class SkipFileOnSampleLoad(Exception):
 class AudioSampleManager:
 
     _sample_data: Dict[Tuple[str, Pitch], AudioSample] = dict()
-    _timbre_data: Dict[str, AudioSampleEnvelope] = dict()
+    _timbre_data: Dict[str, AudioSampleTimbreProperties] = dict()
 
     def __init__(self, config: AudioSampleManagerConfig):
         self._config = config
@@ -83,24 +83,24 @@ class AudioSampleManager:
     def _samples_dir(self) -> str:
         return os.path.join("../data/samples", self._config.src)
 
-    def _load_envelope(self, timbre: str) -> AudioSampleEnvelope:
-        envelope_settings: Dict[str, Any] = dict()
+    def _load_timbre_properties(self, timbre: str) -> AudioSampleTimbreProperties:
+        settings: Dict[str, Any] = dict()
         try:
-            arg_types = AudioSampleEnvelope.__annotations__  # { <ARG>: <TYPE> }
-            path = os.path.join(self._samples_dir, f"{timbre}.envelope")
+            arg_types = AudioSampleTimbreProperties.__annotations__  # { <ARG>: <TYPE> }
+            path = os.path.join(self._samples_dir, f"{timbre}.timbre")
             for arg, val in dotenv_values(path).items():
                 if arg in arg_types:
-                    envelope_settings[arg] = arg_types[arg](val)
+                    settings[arg] = arg_types[arg](val)
         except:
             pass
-        return AudioSampleEnvelope(**envelope_settings)
+        return AudioSampleTimbreProperties(**settings)
 
     def _load_file(self, path: str):
         timbre, extension = os.path.basename(path).split(".")
         if extension != "wav":
             raise SkipFileOnSampleLoad()
-        envelope = self._load_envelope(timbre)
-        self._timbre_data[timbre] = envelope
+        timbre_properties = self._load_timbre_properties(timbre)
+        self._timbre_data[timbre] = timbre_properties
         # throws an exception if load failed
         data: NDArray[np.float32] = librosa.load(  # type: ignore
             path,
@@ -115,8 +115,8 @@ class AudioSampleManager:
                 return int(m * position)
 
             sample_time = position_to_sample_time(index)
-            start = sample_time + envelope.start_sample
-            end = sample_time + envelope.end_sample
+            start = sample_time + timbre_properties.start_sample_idx
+            end = sample_time + timbre_properties.end_sample_idx
             return data[start:end]
 
         for i, pitch_value in enumerate(
@@ -124,7 +124,7 @@ class AudioSampleManager:
         ):
             self._sample_data[(timbre, Pitch(pitch_value))] = AudioSample(
                 audio=splice_file(i),
-                envelope=envelope,
+                timbre_properties=timbre_properties,
             )
 
     @property
