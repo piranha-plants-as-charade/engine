@@ -68,19 +68,21 @@ class Instrument(ABC):
 
         audio_as_dict: DefaultDict[int, np.float32] = defaultdict(lambda: np.float32(0))
         for note in self.notes.list():
+            note_range = (
+                roll_time_to_sample_time(note.start),
+                roll_time_to_sample_time(note.end),
+            )
             timbre = sample_manager.get_random_timbre()
             sample = sample_manager.get_sample(timbre, note.pitch)
             sample_len = len(sample.audio)
-            for i, j in enumerate(
-                range(
-                    roll_time_to_sample_time(note.start),
-                    roll_time_to_sample_time(note.end),
-                )
-            ):
+            sample_envelope = sample.envelope.get_window(
+                min(sample_len, note_range[1] - note_range[0])
+            )
+            for i, j in enumerate(range(*note_range)):
                 if i >= sample_len:
                     break
                 offset = config.num_start_padding_samples + sample.envelope.start_shift
-                audio_as_dict[j + offset] += sample.smoothened_audio[i]
+                audio_as_dict[j + offset] += sample.audio[i] * sample_envelope[i]
 
         return np.array([audio_as_dict[i] for i in range(max(audio_as_dict.keys()))])
 
