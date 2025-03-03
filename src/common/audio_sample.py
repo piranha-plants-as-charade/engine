@@ -32,7 +32,7 @@ class AudioSampleManagerConfig:
 
 @dataclass(frozen=True)
 class AudioSampleTimbreProperties:
-    start_shift: int = -1000
+    start_shift: int = 0
     start_sample_idx: int = 0
     end_sample_idx: int = 38000
 
