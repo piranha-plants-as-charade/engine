@@ -2,7 +2,11 @@ from common.roll import Roll
 from common.note_collection import NoteCollection
 
 from generation.chord_progression import ChordProgression
-from generation.instruments.base import Instrument
+from generation.instruments.base import (
+    Instrument,
+    InstrumentExportData,
+    SampleInstrumentExportData,
+)
 
 
 class Voice(Instrument):
@@ -11,8 +15,10 @@ class Voice(Instrument):
         super().__init__(parent, name)
 
     @property
-    def midi_id(self) -> int:
-        return 54  # voice oohs
+    def export_data(self) -> InstrumentExportData:
+        return SampleInstrumentExportData(
+            sample_src="piranha_plant",
+        )
 
     def generate(
         self,
