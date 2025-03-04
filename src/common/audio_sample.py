@@ -48,6 +48,7 @@ class AudioSampleTimbreProperties:
     end_sample_idx: int = 38000
     ease_in_factor: float = 0.02
     ease_out_factor: float = 0.1
+    db: float = 0
 
     @cache
     def get_envelope(self, num_samples: int) -> NDArray[np.float32]:
@@ -119,6 +120,7 @@ class AudioSampleManager:
                 dtype=np.float32,
             )[0]
             * db_to_strength(self._config.db)
+            * db_to_strength(timbre_properties.db)
         )
 
         def splice_audio(index: int) -> AudioData:
