@@ -7,8 +7,9 @@ import numpy as np
 import scipy.io.wavfile as wav  # type: ignore
 from dataclasses import dataclass
 from typing import Tuple, Dict, List, Type
-from numpy.typing import NDArray
 from midiutil.MidiFile import MIDIFile  # type: ignore
+
+from common.audio_data import AudioData
 
 import generation.instruments.base as instrument
 import generation.instruments.midi_instrument as midi_instrument
@@ -117,11 +118,14 @@ class Roll:
         os.system(
             f"fluidsynth -ni {config.soundfont_path} {midi_file.name} -F {midi_wav_file.name} -r {config.sample_rate}"
         )
-        output: NDArray[np.float32] = librosa.load(  # type: ignore
-            midi_wav_file.name,
-            sr=config.sample_rate,
-            dtype=np.float32,
-        )[0]
+        output = AudioData(
+            librosa.load(  # type: ignore
+                midi_wav_file.name,
+                sr=config.sample_rate,
+                dtype=np.float32,
+            )[0]
+        )
+        output.pad_start(config.num_start_padding_samples)
 
         # Get WAV data from sampled instruments.
         sample_data = [
@@ -129,15 +133,12 @@ class Roll:
         ]
 
         # Add sampled instruments' WAV datas onto MIDI WAV data.
-        output = np.insert(output, 0, np.zeros(config.num_start_padding_samples))
         for sample in sample_data:
-            # FIXME: This code caps the output to the MIDI duration. It should instead be the
-            # max between the MIDI and sample durations.
-            for i in range(min(len(output), len(sample))):
-                output[i] += sample[i]
+            for i, datem in enumerate(sample.as_array()):
+                output.add(i, datem)
 
         # Export combined WAV data and close temporary files.
-        wav.write(config.output_path, config.sample_rate, output)  # type: ignore
+        wav.write(config.output_path, config.sample_rate, output.as_array())  # type: ignore
         midi_wav_file.close()
         midi_file.close()
 

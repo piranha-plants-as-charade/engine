@@ -71,11 +71,10 @@ class SkipFileOnSampleLoad(Exception):
 
 
 class AudioSampleManager:
-
-    _sample_data: Dict[Tuple[str, Pitch], AudioSample] = dict()
-    _timbre_data: Dict[str, AudioSampleTimbreProperties] = dict()
-
+    
     def __init__(self, config: AudioSampleManagerConfig):
+        self._sample_data: Dict[Tuple[str, Pitch], AudioSample] = dict()
+        self._timbre_data: Dict[str, AudioSampleTimbreProperties] = dict()
         self._config = config
         for timbre_file in os.listdir(self._samples_dir):
             try:
