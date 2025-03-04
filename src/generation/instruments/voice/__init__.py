@@ -2,7 +2,7 @@ from common.roll import Roll
 from common.note_collection import NoteCollection
 
 from generation.chord_progression import ChordProgression
-from generation.instruments.sampled_instrument import (
+from generation.instruments.base import (
     SampledInstrument,
     SampledInstrumentExportConfig,
 )

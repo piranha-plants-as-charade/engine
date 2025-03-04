@@ -10,14 +10,17 @@ from typing import Tuple, Dict, List, Type
 from midiutil.MidiFile import MIDIFile  # type: ignore
 
 from common.audio_data import AudioData
+from common.structures.decibel import dB
 
 import generation.instruments.base as instrument
-import generation.instruments.midi_instrument as midi_instrument
-import generation.instruments.sampled_instrument as sampled_instrument
 
 
 @dataclass(frozen=True)
 class RollExportConfig:
+    """
+    TODO
+    """
+
     output_path: str
     sample_rate: int = 44100
     start_padding: float = 0.5  # in seconds
@@ -25,9 +28,11 @@ class RollExportConfig:
         "https://github.com/musescore/MuseScore/raw/refs/heads/master/share/sound/MS%20Basic.sf3"
     )
     soundfont_path: str = "../data/soundfonts/ms_basic.sf3"
+    midi_db: dB = dB(10)
+    sample_db: dB = dB(0)
 
     @property
-    def num_start_padding_samples(self) -> int:
+    def start_padding_size(self) -> int:
         return int(self.start_padding * self.sample_rate)
 
 
@@ -124,8 +129,9 @@ class Roll:
                 sr=config.sample_rate,
                 dtype=np.float32,
             )[0]
+            * config.midi_db.strength
         )
-        output.pad_start(config.num_start_padding_samples)
+        output.pad_start(config.start_padding_size)
 
         # Get WAV data from sampled instruments.
         sample_data = [
@@ -134,24 +140,24 @@ class Roll:
 
         # Add sampled instruments' WAV datas onto MIDI WAV data.
         for sample in sample_data:
-            for i, datem in enumerate(sample.as_array()):
-                output.add(i, datem)
+            array = sample.array
+            output.add_range((0, len(array)), array * config.sample_db.strength)
 
         # Export combined WAV data and close temporary files.
-        wav.write(config.output_path, config.sample_rate, output.as_array())  # type: ignore
+        wav.write(config.output_path, config.sample_rate, output.array)  # type: ignore
         midi_wav_file.close()
         midi_file.close()
 
     def _get_instruments_by_type(self) -> Tuple[
-        List[midi_instrument.MIDIInstrument],
-        List[sampled_instrument.SampledInstrument],
+        List[instrument.MIDIInstrument],
+        List[instrument.SampledInstrument],
     ]:
-        midi_instruments: List[midi_instrument.MIDIInstrument] = list()
-        sampled_instruments: List[sampled_instrument.SampledInstrument] = list()
+        midi_instruments: List[instrument.MIDIInstrument] = list()
+        sampled_instruments: List[instrument.SampledInstrument] = list()
         for ins in self.list_instruments():
-            if issubclass(ins.__class__, midi_instrument.MIDIInstrument):
+            if issubclass(ins.__class__, instrument.MIDIInstrument):
                 midi_instruments.append(ins)  # type: ignore
-            elif issubclass(ins.__class__, sampled_instrument.SampledInstrument):
+            elif issubclass(ins.__class__, instrument.SampledInstrument):
                 sampled_instruments.append(ins)  # type: ignore
 
         return (midi_instruments, sampled_instruments)

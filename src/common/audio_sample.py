@@ -8,7 +8,9 @@ from numpy.typing import NDArray
 from dotenv import dotenv_values
 from functools import cache
 
+from common.audio_data import AudioData
 from common.structures.pitch import Pitch
+from common.structures.decibel import dB
 
 
 @dataclass(frozen=True)
@@ -16,13 +18,14 @@ class AudioSampleManagerConfig:
     """
     :param src: The folder in which the sample file reside (i.e. `data/<src>`), with each file consisting of chromatic ascending notes of the same timbre.
     :param sample_rate: The sample rate at which to load each sample file.
+    :param db: The decibel boost for the sample.
     :param range: The range supported.
     :param beats_per_minute: The tempo at which each note is 1 beat.
     """
 
     src: str
     sample_rate: int = 44100
-    volume: float = 0.175
+    db: dB = dB(0)
     range: Tuple[Pitch, Pitch] = (
         Pitch.from_str("C3"),
         Pitch.from_str("G6"),
@@ -62,7 +65,7 @@ class AudioSampleTimbreProperties:
 
 @dataclass(frozen=True)
 class AudioSample:
-    audio: NDArray[np.float32]
+    audio: AudioData
     timbre_properties: AudioSampleTimbreProperties
 
 
@@ -71,7 +74,7 @@ class SkipFileOnSampleLoad(Exception):
 
 
 class AudioSampleManager:
-    
+
     def __init__(self, config: AudioSampleManagerConfig):
         self._sample_data: Dict[Tuple[str, Pitch], AudioSample] = dict()
         self._timbre_data: Dict[str, AudioSampleTimbreProperties] = dict()
@@ -109,28 +112,31 @@ class AudioSampleManager:
         timbre_properties = self._load_timbre_properties(timbre)
         self._timbre_data[timbre] = timbre_properties
         # throws an exception if load failed
-        data: NDArray[np.float32] = librosa.load(  # type: ignore
-            path,
-            sr=self.sample_rate,
-            dtype=np.float32,
-        )[0]
-        data *= self._config.volume
+        audio = AudioData(
+            librosa.load(  # type: ignore
+                path,
+                sr=self.sample_rate,
+                dtype=np.float32,
+            )[0]
+            * self._config.db.strength
+        )
 
-        def splice_file(index: int) -> NDArray[np.float32]:
-            def position_to_sample_time(position: float) -> int:
+        def splice_audio(index: int) -> AudioData:
+            def to_sample_time(position: float) -> int:
                 m = self.sample_rate * 60 / self._config.beats_per_minute
                 return int(m * position)
 
-            sample_time = position_to_sample_time(index)
-            start = sample_time + timbre_properties.start_sample_idx
-            end = sample_time + timbre_properties.end_sample_idx
-            return data[start:end]
+            sample_time = to_sample_time(index)
+            return audio.slice(
+                sample_time + timbre_properties.start_sample_idx,
+                sample_time + timbre_properties.end_sample_idx,
+            )
 
         for i, pitch_value in enumerate(
             range(self._config.range[0].value, self._config.range[1].value + 1)
         ):
             self._sample_data[(timbre, Pitch(pitch_value))] = AudioSample(
-                audio=splice_file(i),
+                audio=splice_audio(i),
                 timbre_properties=timbre_properties,
             )
 
