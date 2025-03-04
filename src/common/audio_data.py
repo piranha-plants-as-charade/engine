@@ -1,8 +1,11 @@
+import librosa
 import numpy as np
 from typing import DefaultDict, Dict, Tuple
 from numpy.typing import NDArray
 from collections import defaultdict
 from functools import cached_property
+
+from common.conversions import db_to_strength
 
 
 class AudioData:
@@ -10,6 +13,17 @@ class AudioData:
     def __init__(self, init_data: NDArray[np.float32] = np.array([])):
         self._data: DefaultDict[int, np.float32] = defaultdict(lambda: np.float32(0))
         self.set_range((0, len(init_data)), init_data)
+
+    @classmethod
+    def from_file(cls, file_name: str, sample_rate: float, db: float = 0):
+        return cls(
+            librosa.load(  # type: ignore
+                file_name,
+                sr=sample_rate,
+                dtype=np.float32,
+            )[0]
+            * db_to_strength(db)
+        )
 
     @cached_property
     def array(self) -> NDArray[np.float32]:

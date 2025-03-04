@@ -58,7 +58,7 @@ class MIDIInstrument(Instrument):
     def export_config(self) -> MIDIInstrumentExportConfig:
         pass
 
-    def add_self_to_midi_track(self, midi: MIDIFile, track: int):
+    def add_notes_to_track(self, midi: MIDIFile, track: int):
         time = 0  # start at the beginning
         channel = track
         instrument_id = self.export_config.instrument_id
@@ -98,7 +98,7 @@ class SampledInstrument(Instrument):
     def export_config(self) -> SampledInstrumentExportConfig:
         pass
 
-    def generate_audio_from_samples(self, config: roll.RollExportConfig) -> AudioData:
+    def get_audio_data(self, config: roll.RollExportConfig) -> AudioData:
         def to_sample_time(time: float) -> int:
             m = config.sample_rate * 60 / self._parent.beats_per_minute
             m *= self._parent.beat_duration / self._parent.quantization

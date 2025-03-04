@@ -1,6 +1,5 @@
 import os
 import random
-import librosa
 import numpy as np
 from dataclasses import dataclass
 from typing import Tuple, Dict, Any
@@ -8,7 +7,6 @@ from numpy.typing import NDArray
 from dotenv import dotenv_values
 from functools import cache
 
-from common.conversions import db_to_strength
 from common.audio_data import AudioData
 from common.structures.pitch import Pitch
 
@@ -111,13 +109,10 @@ class AudioSampleManager:
         timbre_properties = self._load_timbre_properties(timbre)
         self._timbre_data[timbre] = timbre_properties
         # throws an exception if load failed
-        audio = AudioData(
-            librosa.load(  # type: ignore
-                path,
-                sr=self.sample_rate,
-                dtype=np.float32,
-            )[0]
-            * db_to_strength(timbre_properties.db)
+        audio = AudioData.from_file(
+            path,
+            sample_rate=self.sample_rate,
+            db=timbre_properties.db,
         )
 
         def splice_audio(index: int) -> AudioData:

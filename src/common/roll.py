@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import os
-import librosa
 import tempfile
-import numpy as np
 import scipy.io.wavfile as wav  # type: ignore
 from dataclasses import dataclass
 from typing import Tuple, Dict, List, Type
@@ -97,56 +95,15 @@ class Roll:
     def export(self, config: RollExportConfig):
         midi_instruments, sampled_instruments = self._get_instruments_by_type()
 
-        # Download soundfont if missing.
-        if not os.path.exists(config.soundfont_path):
-            os.makedirs(os.path.dirname(config.soundfont_path), exist_ok=True)
-            os.system(f"curl -o {config.soundfont_path} -L {config.soundfont_url}")
-
-        # Create temporary files.
-        midi_file = tempfile.NamedTemporaryFile(suffix=".mid")
-        midi_wav_file = tempfile.NamedTemporaryFile(suffix=".wav")
-
-        # Create MIDI data.
-        midi_data = MIDIFile(
-            numTracks=len(midi_instruments),
-            ticks_per_quarternote=self.quantization,
-        )
-        for track, ins in enumerate(midi_instruments):
-            ins.add_self_to_midi_track(midi_data, track)
-
-        # Write MIDI data to MIDI file.
-        with open(midi_file.name, "wb") as fout:
-            midi_data.writeFile(fout)  # type: ignore
-
-        # Convert MIDI file to WAV file and load WAV file.
-        os.makedirs(os.path.dirname(config.output_path), exist_ok=True)
-        os.system(
-            f"fluidsynth -ni {config.soundfont_path} {midi_file.name} -F {midi_wav_file.name} -r {config.sample_rate}"
-        )
-        output = AudioData(
-            librosa.load(  # type: ignore
-                midi_wav_file.name,
-                sr=config.sample_rate,
-                dtype=np.float32,
-            )[0]
-            * db_to_strength(config.midi_db)
-        )
-        output.pad_start(config.start_padding_size)
-
-        # Get WAV data from sampled instruments.
-        sample_data = [
-            ins.generate_audio_from_samples(config) for ins in sampled_instruments
-        ]
+        output = self._midi_to_audio_data(config, midi_instruments)
 
         # Add sampled instruments' WAV datas onto MIDI WAV data.
-        for sample in sample_data:
-            array = sample.array
+        for ins in sampled_instruments:
+            array = ins.get_audio_data(config).array
             output.add_range((0, len(array)), array * db_to_strength(config.sample_db))
 
         # Export combined WAV data and close temporary files.
         wav.write(config.output_path, config.sample_rate, output.array)  # type: ignore
-        midi_wav_file.close()
-        midi_file.close()
 
     def _get_instruments_by_type(self) -> Tuple[
         List[instrument.MIDIInstrument],
@@ -161,3 +118,50 @@ class Roll:
                 sampled_instruments.append(ins)  # type: ignore
 
         return (midi_instruments, sampled_instruments)
+
+    def _midi_to_audio_data(
+        self,
+        config: RollExportConfig,
+        instruments: List[instrument.MIDIInstrument],
+    ) -> AudioData:
+        if len(instruments) == 0:
+            return AudioData()
+
+        # Download soundfont if missing.
+        if not os.path.exists(config.soundfont_path):
+            os.makedirs(os.path.dirname(config.soundfont_path), exist_ok=True)
+            os.system(f"curl -o {config.soundfont_path} -L {config.soundfont_url}")
+
+        # Create temporary files.
+        midi_file = tempfile.NamedTemporaryFile(suffix=".mid")
+        midi_wav_file = tempfile.NamedTemporaryFile(suffix=".wav")
+
+        # Create MIDI data.
+        midi_data = MIDIFile(
+            numTracks=len(instruments),
+            ticks_per_quarternote=self.quantization,
+        )
+        for track, ins in enumerate(instruments):
+            ins.add_notes_to_track(midi_data, track)
+
+        # Write MIDI data to MIDI file.
+        with open(midi_file.name, "wb") as fout:
+            midi_data.writeFile(fout)  # type: ignore
+
+        # Convert MIDI file to WAV file and load WAV file.
+        os.makedirs(os.path.dirname(config.output_path), exist_ok=True)
+        os.system(
+            f"fluidsynth -ni {config.soundfont_path} {midi_file.name} -F {midi_wav_file.name} -r {config.sample_rate}"
+        )
+        output = AudioData.from_file(
+            midi_wav_file.name,
+            sample_rate=config.sample_rate,
+            db=config.midi_db,
+        )
+        output.pad_start(config.start_padding_size)
+
+        # Close temporary files.
+        midi_wav_file.close()
+        midi_file.close()
+
+        return output
