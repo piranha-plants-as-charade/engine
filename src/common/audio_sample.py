@@ -8,9 +8,9 @@ from numpy.typing import NDArray
 from dotenv import dotenv_values
 from functools import cache
 
+from common.conversions import db_to_strength
 from common.audio_data import AudioData
 from common.structures.pitch import Pitch
-from common.structures.decibel import dB
 
 
 @dataclass(frozen=True)
@@ -25,7 +25,7 @@ class AudioSampleManagerConfig:
 
     src: str
     sample_rate: int = 44100
-    db: dB = dB(0)
+    db: float = 0
     range: Tuple[Pitch, Pitch] = (
         Pitch.from_str("C3"),
         Pitch.from_str("G6"),
@@ -118,7 +118,7 @@ class AudioSampleManager:
                 sr=self.sample_rate,
                 dtype=np.float32,
             )[0]
-            * self._config.db.strength
+            * db_to_strength(self._config.db)
         )
 
         def splice_audio(index: int) -> AudioData:

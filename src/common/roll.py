@@ -9,8 +9,8 @@ from dataclasses import dataclass
 from typing import Tuple, Dict, List, Type
 from midiutil.MidiFile import MIDIFile  # type: ignore
 
+from common.conversions import db_to_strength
 from common.audio_data import AudioData
-from common.structures.decibel import dB
 
 import generation.instruments.base as instrument
 
@@ -28,8 +28,8 @@ class RollExportConfig:
         "https://github.com/musescore/MuseScore/raw/refs/heads/master/share/sound/MS%20Basic.sf3"
     )
     soundfont_path: str = "../data/soundfonts/ms_basic.sf3"
-    midi_db: dB = dB(10)
-    sample_db: dB = dB(0)
+    midi_db: float = 11
+    sample_db: float = 0
 
     @property
     def start_padding_size(self) -> int:
@@ -129,7 +129,7 @@ class Roll:
                 sr=config.sample_rate,
                 dtype=np.float32,
             )[0]
-            * config.midi_db.strength
+            * db_to_strength(config.midi_db)
         )
         output.pad_start(config.start_padding_size)
 
@@ -141,7 +141,7 @@ class Roll:
         # Add sampled instruments' WAV datas onto MIDI WAV data.
         for sample in sample_data:
             array = sample.array
-            output.add_range((0, len(array)), array * config.sample_db.strength)
+            output.add_range((0, len(array)), array * db_to_strength(config.sample_db))
 
         # Export combined WAV data and close temporary files.
         wav.write(config.output_path, config.sample_rate, output.array)  # type: ignore
