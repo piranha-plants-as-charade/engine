@@ -46,7 +46,7 @@ class AudioSampleTimbreProperties:
     start_shift: int = 0
     start_sample_idx: int = 0
     end_sample_idx: int = 38000
-    ease_in_factor: float = 0.03
+    ease_in_factor: float = 0.02
     ease_out_factor: float = 0.1
 
     @cache
