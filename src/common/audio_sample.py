@@ -18,14 +18,12 @@ class AudioSampleManagerConfig:
     """
     :param src: The folder in which the sample file reside (i.e. `data/<src>`), with each file consisting of chromatic ascending notes of the same timbre.
     :param sample_rate: The sample rate at which to load each sample file.
-    :param db: The decibel boost for the sample.
     :param range: The range supported.
     :param beats_per_minute: The tempo at which each note is 1 beat.
     """
 
     src: str
     sample_rate: int = 44100
-    db: float = 0
     range: Tuple[Pitch, Pitch] = (
         Pitch.from_str("C3"),
         Pitch.from_str("G6"),
@@ -119,7 +117,6 @@ class AudioSampleManager:
                 sr=self.sample_rate,
                 dtype=np.float32,
             )[0]
-            * db_to_strength(self._config.db)
             * db_to_strength(timbre_properties.db)
         )
 
