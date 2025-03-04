@@ -6,12 +6,13 @@ import tempfile
 import numpy as np
 import scipy.io.wavfile as wav  # type: ignore
 from dataclasses import dataclass
-from typing import Tuple, Dict, List, Type, DefaultDict
+from typing import Tuple, Dict, List, Type
 from numpy.typing import NDArray
 from midiutil.MidiFile import MIDIFile  # type: ignore
-from collections import defaultdict
 
 import generation.instruments.base as instrument  # standard import to avoid circular dependency
+import generation.instruments.midi_instrument as midi_instrument
+import generation.instruments.sampled_instrument as sampled_instrument
 
 
 @dataclass(frozen=True)
@@ -88,7 +89,7 @@ class Roll:
         return self.get_instrument(name)
 
     def export(self, config: RollExportConfig):
-        midi_data, sample_data = self._get_instrument_export_data(config)
+        midi_instruments, sampled_instruments = self._get_instruments_by_type()
 
         # Download soundfont if missing.
         if not os.path.exists(config.soundfont_path):
@@ -99,7 +100,15 @@ class Roll:
         midi_file = tempfile.NamedTemporaryFile(suffix=".mid")
         midi_wav_file = tempfile.NamedTemporaryFile(suffix=".wav")
 
-        # Write MIDI file.
+        # Create MIDI data.
+        midi_data = MIDIFile(
+            numTracks=len(midi_instruments),
+            ticks_per_quarternote=self.quantization,
+        )
+        for track, ins in enumerate(midi_instruments):
+            ins.add_self_to_midi_track(midi_data, track)
+
+        # Write MIDI data to MIDI file.
         with open(midi_file.name, "wb") as fout:
             midi_data.writeFile(fout)  # type: ignore
 
@@ -114,7 +123,12 @@ class Roll:
             dtype=np.float32,
         )[0]
 
-        # Add sample WAV data onto MIDI WAV data.
+        # Get WAV data from sampled instruments.
+        sample_data = [
+            ins.generate_audio_from_samples(config) for ins in sampled_instruments
+        ]
+
+        # Add sampled instruments' WAV datas onto MIDI WAV data.
         output = np.insert(output, 0, np.zeros(config.num_start_padding_samples))
         for sample in sample_data:
             # FIXME: This code caps the output to the MIDI duration. It should instead be the
@@ -127,27 +141,16 @@ class Roll:
         midi_wav_file.close()
         midi_file.close()
 
-    def _get_instrument_export_data(
-        self,
-        config: RollExportConfig,
-    ) -> Tuple[MIDIFile, List[NDArray[np.float32]]]:
-        ins_lists: DefaultDict[
-            Type[instrument.InstrumentExportData],
-            List[instrument.Instrument],
-        ] = defaultdict(lambda: list())
+    def _get_instruments_by_type(self) -> Tuple[
+        List[midi_instrument.MIDIInstrument],
+        List[sampled_instrument.SampledInstrument],
+    ]:
+        midi_instruments: List[midi_instrument.MIDIInstrument] = list()
+        sampled_instruments: List[sampled_instrument.SampledInstrument] = list()
         for ins in self.list_instruments():
-            ins_lists[type(ins.export_data)].append(ins)
+            if issubclass(ins.__class__, midi_instrument.MIDIInstrument):
+                midi_instruments.append(ins)  # type: ignore
+            elif issubclass(ins.__class__, sampled_instrument.SampledInstrument):
+                sampled_instruments.append(ins)  # type: ignore
 
-        midi_data = MIDIFile(
-            numTracks=len(ins_lists[instrument.MIDIInstrumentExportData]),
-            ticks_per_quarternote=self.quantization,
-        )
-        for track, ins in enumerate(ins_lists[instrument.MIDIInstrumentExportData]):
-            ins.add_self_to_midi_track(midi_data, track)
-
-        sample_data = [
-            ins.generate_audio_from_samples(config)
-            for ins in ins_lists[instrument.SampleInstrumentExportData]
-        ]
-
-        return (midi_data, sample_data)
+        return (midi_instruments, sampled_instruments)
