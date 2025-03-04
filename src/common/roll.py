@@ -1,4 +1,4 @@
-from __future__ import annotations  # avoid circular dependency
+from __future__ import annotations
 
 import os
 import librosa
@@ -10,7 +10,7 @@ from typing import Tuple, Dict, List, Type
 from numpy.typing import NDArray
 from midiutil.MidiFile import MIDIFile  # type: ignore
 
-import generation.instruments.base as instrument  # standard import to avoid circular dependency
+import generation.instruments.base as instrument
 import generation.instruments.midi_instrument as midi_instrument
 import generation.instruments.sampled_instrument as sampled_instrument
 

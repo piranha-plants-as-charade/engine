@@ -1,10 +1,10 @@
-from __future__ import annotations  # avoid circular dependency
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
 
-import common.roll as roll  # standard import to avoid circular dependency
+import common.roll as roll
 from common.note_collection import NoteCollection
 
 
