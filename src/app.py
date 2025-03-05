@@ -38,6 +38,7 @@ async def generate(file: UploadFile) -> FileResponse:
     export_path = await main.generate(input_path=upload_file.name)
 
     upload_file.close()
+    os.remove(upload_file.name)
 
     return FileResponse(
         path=export_path,
