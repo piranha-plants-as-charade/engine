@@ -3,3 +3,6 @@ __pycache__/
 
 playground/output/
 data/soundfonts/*
+
+inputs/
+outputs/
