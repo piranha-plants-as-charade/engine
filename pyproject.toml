@@ -12,6 +12,9 @@ dependencies = [
     "numpy (==2.1)",
     "librosa (>=0.10.2.post1,<0.11.0)",
     "dotenv (>=0.9.9,<0.10.0)",
+    "fastapi (>=0.115.11,<0.116.0)",
+    "fastapi-cli (>=0.0.7,<0.0.8)",
+    "python-multipart (>=0.0.20,<0.0.21)",
 ]
 
 
