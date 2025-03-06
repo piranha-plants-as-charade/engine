@@ -1,8 +1,10 @@
 __pycache__/
 .DS_Store
 
+.env
+
 playground/output/
 data/soundfonts/*
 
-inputs/
-outputs/
+input/
+output/
