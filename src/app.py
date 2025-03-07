@@ -1,5 +1,6 @@
 import os
 import uuid
+import mimetypes
 import dataclasses
 from typing import Dict, Any
 from fastapi import FastAPI, UploadFile
@@ -41,8 +42,13 @@ async def generate(file: UploadFile) -> FileResponse:
         fout.write(content)
 
     output_path = await main.generate(input_path=upload_path)
+    output_mime_type = mimetypes.guess_type(output_path)[0]
+    assert output_mime_type in (
+        "audio/wav",
+        "audio/x-wav",  # audio/wav and audio/x-wav are identical
+    )
 
     return FileResponse(
         path=output_path,
-        media_type=file.content_type,  # TODO: make this audio/wav
+        media_type="audio/wav",
     )
