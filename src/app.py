@@ -1,5 +1,5 @@
 import os
-import tempfile
+import uuid
 import dataclasses
 from typing import Dict, Any
 from fastapi import FastAPI, UploadFile
@@ -31,19 +31,16 @@ async def generate(file: UploadFile) -> FileResponse:
     assert file.content_type is not None
 
     ext = os.path.splitext(file.filename)[1]
+    upload_path = os.path.join(
+        ENV.INPUT_DIR, f"{uuid.uuid4()}{ext}"
+    )  # UUID is guaranteed to be unique
 
     # Save file to disk.
-    upload_file = tempfile.NamedTemporaryFile(
-        dir=ENV.INPUT_DIR,
-        suffix=ext,
-        delete=False,
-    )
-    content = await file.read()
-    upload_file.write(content)
+    with open(upload_path, "wb") as fout:
+        content = await file.read()
+        fout.write(content)
 
-    output_path = await main.generate(input_path=upload_file.name)
-
-    upload_file.close()
+    output_path = await main.generate(input_path=upload_path)
 
     return FileResponse(
         path=output_path,

@@ -1,6 +1,6 @@
 # Piranha Plants as Charade
 
-The premise of this project is to transform an input melody into a full-fledged song in the style of [*Piranha Plants on Parade*](https://www.youtube.com/watch?v=3EkzTUPoWMU) from *Super Mario Bros. Wonder*.
+The premise of this project is to transform an input melody into a full-fledged song in the style of [_Piranha Plants on Parade_](https://www.youtube.com/watch?v=3EkzTUPoWMU) from _Super Mario Bros. Wonder_.
 
 ## Setup
 
@@ -9,16 +9,19 @@ The premise of this project is to transform an input melody into a full-fledged 
 - [Python 3.11](https://www.python.org/downloads/)
 - [Poetry](https://python-poetry.org/docs/#installation)
 - [FluidSynth](https://github.com/FluidSynth/fluidsynth/wiki/Download)
+- [FFmpeg](https://ffmpeg.org/download.html)
 
 ### Installation
 
 Run the following commands:
+
 ```sh
 poetry shell    # activates the Poetry environment
 poetry install  # installs the Python dependencies
 ```
 
 Create `src/.env`. Below is an example environment file for development purposes:
+
 ```env
 FE_BASE_URL=http://localhost:3000
 BE_BASE_URL=http://localhost:8000
@@ -29,9 +32,11 @@ OUTPUT_DIR=../output               # relative to /src
 ## Development
 
 In `/src`, run the following command:
+
 ```sh
 fastapi dev app.py
 ```
+
 This will open a server at `localhost:8000`. See [Endpoints](#endpoints) for endpoint-specific details.
 
 ## Endpoints
