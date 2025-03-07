@@ -148,7 +148,7 @@ class Roll:
         midi_data.writeFile(midi_file)  # type: ignore
         midi_file.flush()
 
-        # Close files for FluidSynth.
+        # Close files before FluidSynth call.
         midi_file.close()
         midi_wav_file.close()
 
