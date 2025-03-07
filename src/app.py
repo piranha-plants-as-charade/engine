@@ -1,5 +1,6 @@
 import os
-import tempfile
+import uuid
+import mimetypes
 import dataclasses
 from typing import Dict, Any
 from fastapi import FastAPI, UploadFile
@@ -31,21 +32,23 @@ async def generate(file: UploadFile) -> FileResponse:
     assert file.content_type is not None
 
     ext = os.path.splitext(file.filename)[1]
+    upload_path = os.path.join(
+        ENV.INPUT_DIR, f"{uuid.uuid4()}{ext}"
+    )  # UUID is guaranteed to be unique
 
     # Save file to disk.
-    upload_file = tempfile.NamedTemporaryFile(
-        dir=ENV.INPUT_DIR,
-        suffix=ext,
-        delete=False,
+    with open(upload_path, "wb") as fout:
+        content = await file.read()
+        fout.write(content)
+
+    output_path = await main.generate(input_path=upload_path)
+    output_mime_type = mimetypes.guess_type(output_path)[0]
+    assert output_mime_type in (
+        "audio/wav",
+        "audio/x-wav",  # audio/wav and audio/x-wav are identical
     )
-    content = await file.read()
-    upload_file.write(content)
-
-    output_path = await main.generate(input_path=upload_file.name)
-
-    upload_file.close()
 
     return FileResponse(
         path=output_path,
-        media_type=file.content_type,  # TODO: make this audio/wav
+        media_type="audio/wav",
     )

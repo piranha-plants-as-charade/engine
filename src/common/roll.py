@@ -135,7 +135,6 @@ class Roll:
         # Create temporary files.
         midi_file = tempfile.NamedTemporaryFile(suffix=".mid", delete=False)
         midi_wav_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
-        midi_wav_file.close() # fluidsynth needs this to be closed
 
         # Create MIDI data.
         midi_data = MIDIFile(
@@ -148,6 +147,10 @@ class Roll:
         # Write MIDI data to MIDI file.
         midi_data.writeFile(midi_file)  # type: ignore
         midi_file.flush()
+
+        # Close files before FluidSynth call.
+        midi_file.close()
+        midi_wav_file.close()
 
         # Convert MIDI file to WAV file and load WAV file.
         os.makedirs(os.path.dirname(config.output_path), exist_ok=True)
@@ -162,7 +165,6 @@ class Roll:
         output.pad_start(config.start_padding_size)
 
         # Delete temp files.
-        midi_file.close()
         os.remove(midi_file.name)
         os.remove(midi_wav_file.name)
 
