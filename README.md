@@ -18,6 +18,14 @@ poetry shell    # activates the Poetry environment
 poetry install  # installs the Python dependencies
 ```
 
+Create `src/.env`. Below is an example environment file for development purposes:
+```env
+FE_BASE_URL=http://localhost:3000
+BE_BASE_URL=http://localhost:8000
+INPUT_DIR=../input                 # relative to /src
+OUTPUT_DIR=../output               # relative to /src
+```
+
 ## Development
 
 In `/src`, run the following command:
