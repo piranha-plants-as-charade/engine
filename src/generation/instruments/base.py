@@ -50,7 +50,7 @@ class Instrument(ABC):
 class MIDIInstrumentExportConfig(InstrumentExportConfig):
     instrument_id: int
     channel: int
-    volume: int = 96
+    volume: int = 96  # from 0 to 127
 
 
 class MIDIInstrument(Instrument):
