@@ -5,7 +5,7 @@ from numpy.typing import NDArray
 from collections import defaultdict
 from functools import cached_property
 
-from common.conversions import db_to_strength
+from common import db_to_strength
 
 
 class AudioData:

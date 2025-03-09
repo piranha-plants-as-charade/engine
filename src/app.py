@@ -1,10 +1,11 @@
 import os
 import uuid
-import mimetypes
 from typing import Annotated
 from fastapi import FastAPI, UploadFile, File, Header, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
+
+from common import is_wav_media_type
 
 import main
 from env import ENV
@@ -72,11 +73,7 @@ async def generate(
         fout.write(content)
 
     output_path = await main.generate(input_path=upload_path)
-    output_mime_type = mimetypes.guess_type(output_path)[0]
-    assert output_mime_type in (
-        "audio/wav",
-        "audio/x-wav",  # audio/wav and audio/x-wav are identical
-    )
+    assert is_wav_media_type(output_path)
 
     return FileResponse(
         status_code=status.HTTP_200_OK,

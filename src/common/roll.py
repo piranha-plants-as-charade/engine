@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Tuple, Dict, List, Type
 from midiutil.MidiFile import MIDIFile  # type: ignore
 
-from common.conversions import db_to_strength
+from common import db_to_strength
 from common.audio_data import AudioData
 
 import generation.instruments.base as instrument
