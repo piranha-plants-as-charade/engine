@@ -49,6 +49,8 @@ class Instrument(ABC):
 @dataclass(frozen=True)
 class MIDIInstrumentExportConfig(InstrumentExportConfig):
     instrument_id: int
+    channel: int
+    volume: int = 96
 
 
 class MIDIInstrument(Instrument):
@@ -60,8 +62,9 @@ class MIDIInstrument(Instrument):
 
     def add_notes_to_track(self, midi: MIDIFile, track: int):
         time = 0  # start at the beginning
-        channel = track
+        channel = self.export_config.channel
         instrument_id = self.export_config.instrument_id
+        volume = self.export_config.volume
 
         midi.addTrackName(track, time, self.name)  # type: ignore
         midi.addTempo(track, time, self._parent.beats_per_minute)  # type: ignore
@@ -82,7 +85,7 @@ class MIDIInstrument(Instrument):
                 note.pitch.value,
                 note.start * time_scale,
                 note.duration * time_scale,
-                100,
+                volume,
             )
 
 
