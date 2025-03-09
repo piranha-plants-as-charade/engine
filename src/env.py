@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Env:
+    BE_AUTH_TOKEN: str
     FE_BASE_URL: str
     BE_BASE_URL: str
     INPUT_DIR: str
