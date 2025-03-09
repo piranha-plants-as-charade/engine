@@ -8,7 +8,7 @@ from generation.instruments.base import (
     MIDIInstrumentExportConfig,
 )
 
-SNARE_DRUM_PITCH = Pitch(35)
+SNARE_DRUM_PITCH = Pitch(38)
 
 
 class SnareDrum(MIDIInstrument):
