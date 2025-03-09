@@ -24,6 +24,7 @@ class Piano(MIDIInstrument):
     def export_config(self) -> MIDIInstrumentExportConfig:
         return MIDIInstrumentExportConfig(
             instrument_id=1,  # acoustic grand
+            channel=0,
         )
 
     def generate(self, chord_progression: ChordProgression):
