@@ -2,13 +2,15 @@ import os
 import random
 import numpy as np
 from dataclasses import dataclass
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict
 from numpy.typing import NDArray
-from dotenv import dotenv_values
 from functools import cache
 
+from common import is_wav_media_type
 from common.audio_data import AudioData
 from common.structures.pitch import Pitch
+
+from env import load_env
 
 
 @dataclass(frozen=True)
@@ -78,7 +80,7 @@ class AudioSampleManager:
         self._config = config
         for timbre_file in os.listdir(self._samples_dir):
             try:
-                self._load_file(os.path.join(self._samples_dir, timbre_file))
+                self._load_timbre_file(os.path.join(self._samples_dir, timbre_file))
             except SkipFileOnSampleLoad:
                 pass
             except:
@@ -90,23 +92,15 @@ class AudioSampleManager:
     def _samples_dir(self) -> str:
         return os.path.join("../data/samples", self._config.src)
 
-    def _load_timbre_properties(self, timbre: str) -> AudioSampleTimbreProperties:
-        settings: Dict[str, Any] = dict()
-        try:
-            arg_types = AudioSampleTimbreProperties.__annotations__  # { <ARG>: <TYPE> }
-            path = os.path.join(self._samples_dir, f"{timbre}.timbre")
-            for arg, val in dotenv_values(path).items():
-                if arg in arg_types:
-                    settings[arg] = arg_types[arg](val)
-        except:
-            pass
-        return AudioSampleTimbreProperties(**settings)
-
-    def _load_file(self, path: str):
-        timbre, extension = os.path.basename(path).split(".")
-        if extension != "wav":
+    def _load_timbre_file(self, path: str):
+        dir, file_name = os.path.split(path)
+        timbre = os.path.splitext(file_name)[0]
+        if not is_wav_media_type(path):
             raise SkipFileOnSampleLoad()
-        timbre_properties = self._load_timbre_properties(timbre)
+        timbre_properties: AudioSampleTimbreProperties = load_env(
+            AudioSampleTimbreProperties,
+            os.path.join(dir, f"{timbre}.timbre"),
+        )
         self._timbre_data[timbre] = timbre_properties
         # throws an exception if load failed
         audio = AudioData.from_file(

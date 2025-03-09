@@ -23,6 +23,7 @@ poetry install  # installs the Python dependencies
 Create `src/.env`. Below is an example environment file for development purposes:
 
 ```env
+BE_AUTH_TOKEN=<TOKEN>
 FE_BASE_URL=http://localhost:3000
 BE_BASE_URL=http://localhost:8000
 INPUT_DIR=../input                 # relative to /src
@@ -37,14 +38,8 @@ In `/src`, run the following command:
 fastapi dev app.py
 ```
 
-This will open a server at `localhost:8000`. See [Endpoints](#endpoints) for endpoint-specific details.
+This will open a server at `localhost:8000`.
 
 ## Endpoints
 
-### `/generate`
-
-#### Input
-
-| Field | Type       | Description                                                                              |
-| ----- | ---------- | ---------------------------------------------------------------------------------------- |
-| file  | File (WAV) | An audio file containing a melody to arrange in the style of _Piranha Plants on Parade_. |
+The endpoint documentation can be found at http://localhost:8000/redoc.
