@@ -18,6 +18,12 @@ class PitchDetector:
         cls,
         audio: AudioData,
     ) -> Tuple[NDArray[np.float64], NDArray[np.float64]]:
+        """
+        Predicts the pitches for the given audio.
+
+        :param audio: The audio to predict the pitches for.
+        :return: A tuple containing the time and the predicted pitches in Hz.
+        """
         f0: NDArray[np.float64]
         _voiced_flag: NDArray[np.bool_]
         voiced_probs: NDArray[np.float64]
@@ -44,6 +50,13 @@ class PitchDetector:
     def _snap_hz(
         cls, pitch: NDArray[np.float64], shift_candidates: NDArray[np.float64]
     ) -> NDArray[np.float64]:
+        """
+        Snaps the given pitches to the closest tones, considering a set of constant shifts.
+
+        :param pitch: The pitches to snap in Hz.
+        :param shift_candidates: The shifts to consider in cents.
+        :return: The snapped pitches in Hz.
+        """
         snapped_pitches: NDArray[np.float64]
 
         # Compute all shifts.
@@ -62,6 +75,13 @@ class PitchDetector:
     def detect(
         cls, audio: AudioData, config: PitchDetectorConfig
     ) -> Tuple[NDArray[np.float64], NDArray[np.float16]]:
+        """
+        Detects the pitches for the given audio. The pitches are quantized to MIDI notes.
+
+        :param audio: The audio to detect the pitches for.
+        :param config: The configuration for the pitch detector.
+        :return: A tuple containing the time and the detected pitches in MIDI notes.
+        """
         t, pitch = cls._get_pitches(audio)
 
         snapped_pitch = cls._snap_hz(

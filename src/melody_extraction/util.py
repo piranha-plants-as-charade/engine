@@ -1,8 +1,8 @@
 import numpy as np
-import numpy.typing as npt
+from numpy.typing import NDArray
 
 
-def mode(arr: npt.NDArray[np.float16]) -> np.float64 | None:
+def mode(arr: NDArray[np.float16]) -> np.float64 | None:
     int_arr = arr[~np.isnan(arr)].astype(np.int32)
     if int_arr.size == 0:
         return None

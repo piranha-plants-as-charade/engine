@@ -1,6 +1,6 @@
 import librosa
 import numpy as np
-import numpy.typing as npt
+from numpy.typing import NDArray
 from typing import Tuple
 from common.audio_data import AudioData
 from common.note_collection import NoteCollection
@@ -14,9 +14,15 @@ class MelodyExtractor:
     def _harmonic_percussive_split(
         cls,
         audio: AudioData,
-    ) -> Tuple[AudioData, npt.NDArray[np.int32]]:
-        harmonic_signal: npt.NDArray[np.float32]
-        onset_times: npt.NDArray[np.int32]
+    ) -> Tuple[AudioData, NDArray[np.int32]]:
+        """
+        Split the audio into harmonic and percussive components.
+
+        :param audio: The audio to split.
+        :return: A tuple containing the harmonic audio and the onset times (percussive elements).
+        """
+        harmonic_signal: NDArray[np.float32]
+        onset_times: NDArray[np.int32]
 
         D = librosa.stft(audio.array)  # type: ignore
 
@@ -33,6 +39,12 @@ class MelodyExtractor:
 
     @classmethod
     def extract_melody(cls, input_path: str) -> Tuple[Roll, NoteCollection]:
+        """
+        Extract the melody from the given audio file to a Roll and NoteCollection.
+
+        :param input_path: The path to the audio file.
+        :return: A tuple containing the Roll and NoteCollection.
+        """
         audio = AudioData.from_file(input_path)
 
         harmonic_audio, onset_times = cls._harmonic_percussive_split(audio)
