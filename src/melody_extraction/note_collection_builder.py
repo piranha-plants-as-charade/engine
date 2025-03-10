@@ -77,13 +77,17 @@ class NoteCollectionBuilder:
 
         # End previous note.
         if self._note_start is not None and (
-            percussive_onset or self._note_value != current_note_value
+            percussive_onset
+            or (
+                current_note_value is not None
+                and self._note_value != current_note_value.astype(int)[0]
+            )
         ):
             self._end_note(unit_count)
 
         # Start new note.
         if self._note_start is None and current_note_value is not None:
-            self._start_note(unit_count, current_note_value.astype(int))
+            self._start_note(unit_count, current_note_value.astype(int)[0])
 
     def build(self) -> NoteCollection:
         self._note_start: int | None = None

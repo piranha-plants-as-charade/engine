@@ -14,7 +14,7 @@ async def generate(input_path: str) -> str:
     output_path = os.path.join(ENV.OUTPUT_DIR, f"{name}.wav")
 
     roll, notes = MelodyExtractor.extract_melody(input_path)
-    v = roll.add_instrument("Melody", Voice)
+    v = roll.add_instrument("voice1", Voice)
     v.generate(notes)
 
     roll.export(RollExportConfig(output_path))
