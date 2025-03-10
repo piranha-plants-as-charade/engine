@@ -29,13 +29,10 @@ class MelodyExtractor:
         harmonic, percussive = librosa.decompose.hpss(D)  # type: ignore
 
         harmonic_signal = librosa.istft(harmonic)  # type: ignore
-        onset_env = librosa.onset.onset_strength(S=np.abs(percussive), sr=audio.sample_rate)  # type: ignore
-        onset_frames = librosa.onset.onset_detect(onset_envelope=onset_env, sr=audio.sample_rate)  # type: ignore
-        onset_times = librosa.frames_to_time(onset_frames, sr=audio.sample_rate)  # type: ignore
+        onset_env = librosa.onset.onset_strength(S=np.abs(percussive), aggregate=np.median, sr=audio.sample_rate)  # type: ignore
+        onset_times = librosa.onset.onset_detect(onset_envelope=onset_env, sr=audio.sample_rate)  # type: ignore
 
-        return AudioData(harmonic_signal, audio.sample_rate), onset_times * int(
-            audio.sample_rate
-        )
+        return AudioData(harmonic_signal, audio.sample_rate), onset_times
 
     @classmethod
     def extract_melody(cls, input_path: str) -> Tuple[Roll, NoteCollection]:
