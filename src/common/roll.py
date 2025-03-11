@@ -105,7 +105,6 @@ class Roll:
         return self.get_instrument(name)
 
     def generate(self):
-        assert self.melody is not None and self.chord_progression is not None
         for ins in self.list_instruments():
             ins.generate()
 

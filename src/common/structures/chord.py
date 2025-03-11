@@ -51,6 +51,7 @@ class Chord:
     root: Pitch
     quality: ChordQuality
 
+    # TODO: test this
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Chord):
             return False
