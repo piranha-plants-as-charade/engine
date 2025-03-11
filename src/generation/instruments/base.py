@@ -66,17 +66,19 @@ class MIDIInstrument(Instrument):
         volume = self.export_config.volume
 
         midi.addTrackName(track, time, self.name)  # type: ignore
-        midi.addTempo(track, time, self._parent.beats_per_minute)  # type: ignore
+        midi.addTempo(track, time, self._parent.config.beats_per_minute)  # type: ignore
         midi.addTimeSignature(  # type: ignore
             track,
             time,
-            self._parent.beats_per_measure,
-            int(math.sqrt(self._parent.beat_duration)),
+            self._parent.config.beats_per_measure,
+            int(math.sqrt(self._parent.config.beat_duration)),
             24,
         )
         midi.addProgramChange(track, channel, time, instrument_id)  # type: ignore
 
-        time_scale = self._parent.beat_duration / self._parent.quantization
+        time_scale = (
+            self._parent.config.beat_duration / self._parent.config.quantization
+        )
         for note in self.notes.list():
             midi.addNote(  # type: ignore
                 track,
@@ -102,8 +104,8 @@ class SampledInstrument(Instrument):
 
     def get_audio_data(self, config: roll.RollExportConfig) -> AudioData:
         def to_sample_time(time: float) -> int:
-            m = config.sample_rate * 60 / self._parent.beats_per_minute
-            m *= self._parent.beat_duration / self._parent.quantization
+            m = config.sample_rate * 60 / self._parent.config.beats_per_minute
+            m *= self._parent.config.beat_duration / self._parent.config.quantization
             return int(m * time)
 
         def get_shift_size(sample: AudioSample) -> int:

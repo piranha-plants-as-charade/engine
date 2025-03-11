@@ -49,18 +49,18 @@ class Piano(MIDIInstrument):
                     Note(
                         pitch=chord.root,
                         start=time,
-                        duration=self._parent.Duration(1 / 2),
+                        duration=self._parent.config.Duration(1 / 2),
                     ).reoctave_near_pitch(Pitch.from_str("C3"))
                 )
             elif i % 8 == 4:
                 prev_pitch_set = self.notes.get_pitches_at_time(
-                    time - self._parent.Duration(1)
+                    time - self._parent.config.Duration(1)
                 )
                 self.notes.add(
                     Note(
                         pitch=chord.root + Interval.from_str("5"),
                         start=time,
-                        duration=self._parent.Duration(1 / 2),
+                        duration=self._parent.config.Duration(1 / 2),
                     ).reoctave_near_pitch(
                         list(prev_pitch_set)[0],
                         position="below",
@@ -72,7 +72,7 @@ class Piano(MIDIInstrument):
                         Note(
                             pitch=pitch,
                             start=time,
-                            duration=self._parent.Duration(1 / 4),
+                            duration=self._parent.config.Duration(1 / 4),
                         )
                         for pitch in chord_voicing
                     ]

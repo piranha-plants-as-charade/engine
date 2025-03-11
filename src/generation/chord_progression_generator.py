@@ -4,7 +4,8 @@ from typing import FrozenSet, Tuple, List
 from functools import cached_property
 from collections import deque
 
-from common.roll import Roll
+from common.roll import RollConfig
+from common.note_collection import NoteCollection
 from common.structures.pitch import Pitch
 from common.structures.interval import Interval
 from common.structures.chord import Chord, ChordQuality
@@ -14,7 +15,8 @@ from generation.chord_progression import ChordProgression
 
 @dataclass(frozen=True)
 class _FSMStateContext:
-    roll: Roll
+    roll_config: RollConfig
+    melody: NoteCollection
     hop_size: float = 1 / 2  # fraction of a measure
 
 
@@ -40,8 +42,8 @@ class _FSMState:
         if self.start_time <= 0:
             return []
 
-        measure_duration = self.context.roll.Duration(
-            self.context.roll.beats_per_measure
+        measure_duration = self.context.roll_config.Duration(
+            self.context.roll_config.beats_per_measure
         )
         hop_duration = round(measure_duration * self.context.hop_size)
         next_time_interval = (
@@ -80,7 +82,7 @@ class _FSMState:
         return instance_cost + self.prev_state.cost()
 
     def _notes(self) -> FrozenSet[Pitch]:
-        return self.context.roll.melody.get_pitches_in_time_range(self.time_interval)
+        return self.context.melody.get_pitches_in_time_range(self.time_interval)
 
 
 class ChordProgressionGenerator:
@@ -92,18 +94,20 @@ class ChordProgressionGenerator:
     chord_IV = Chord(tonic + Interval.from_str("4"), ChordQuality.Maj)
     chord_V = Chord(tonic + Interval.from_str("5"), ChordQuality.Maj)
 
-    def __init__(self, roll: Roll):
+    def __init__(self, roll_config: RollConfig, melody: NoteCollection):
 
-        melody_end_time = max([note.end for note in roll.melody.list()])
-        melody_end_measure = melody_end_time // roll.Duration(roll.beats_per_measure)
+        melody_end_time = max([note.end for note in melody.list()])
+        melody_end_measure = melody_end_time // roll_config.Duration(
+            roll_config.beats_per_measure
+        )
 
         self.starting_state = _FSMState(
-            context=_FSMStateContext(roll),
+            context=_FSMStateContext(roll_config, melody),
             chord=ChordProgressionGenerator.chord_I,
             prev_state=None,
             time_interval=(
-                roll.Time(melody_end_measure, 0),
-                roll.Time(melody_end_measure + 1, 0),
+                roll_config.Time(melody_end_measure, 0),
+                roll_config.Time(melody_end_measure + 1, 0),
             ),
         )
 

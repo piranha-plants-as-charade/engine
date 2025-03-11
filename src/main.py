@@ -25,24 +25,18 @@ async def generate(input_path: str) -> str:
         quantization=16,
     )
 
-    roll = Roll(roll_config)
-
     melody_extractor = MelodyExtractor()
     melody = melody_extractor.extract_melody(roll_config, input_path)
 
-    chord_progression_generator = ChordProgressionGenerator(roll)
+    chord_progression_generator = ChordProgressionGenerator(roll_config, melody)
     chord_progression = chord_progression_generator.generate()
 
-    roll.set_melody(melody)
-    roll.set_chord_progression(chord_progression)
-
+    roll = Roll(melody, chord_progression, roll_config)
     roll.add_instrument("Voice 1", Voice)
     roll.add_instrument("Piano", Piano)
     roll.add_instrument("Bass Drum", BassDrum)
     roll.add_instrument("Snare Drum", SnareDrum)
-
     roll.generate()
-
     roll.export(RollExportConfig(output_path))
 
     return output_path

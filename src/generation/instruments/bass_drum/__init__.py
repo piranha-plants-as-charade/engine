@@ -27,8 +27,8 @@ class BassDrum(MIDIInstrument):
         end = max([note.end for note in self._parent.melody.list()])
 
         measure = 0
-        while self._parent.Time(measure, 0) < end:
-            time = self._parent.Time(measure, 0)
+        while self._parent.config.Time(measure, 0) < end:
+            time = self._parent.config.Time(measure, 0)
             self.notes.add(
                 Note(pitch=BASS_DRUM_PITCH, start=time, duration=4),
             )
