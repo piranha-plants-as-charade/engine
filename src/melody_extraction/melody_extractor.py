@@ -10,9 +10,12 @@ from melody_extraction.pitch_detector import PitchDetector, PitchDetectorConfig
 
 
 class MelodyExtractor:
-    @classmethod
+
+    def __init__(self):
+        pass
+
     def _harmonic_percussive_split(
-        cls,
+        self,
         audio: AudioData,
     ) -> Tuple[AudioData, NDArray[np.int32]]:
         """
@@ -34,8 +37,7 @@ class MelodyExtractor:
 
         return AudioData(harmonic_signal, audio.sample_rate), onset_times
 
-    @classmethod
-    def extract_melody(cls, input_path: str) -> Tuple[Roll, NoteCollection]:
+    def extract_melody(self, roll: Roll, input_path: str) -> NoteCollection:
         """
         Extract the melody from the given audio file to a Roll and NoteCollection.
 
@@ -44,18 +46,11 @@ class MelodyExtractor:
         """
         audio = AudioData.from_file(input_path)
 
-        harmonic_audio, onset_times = cls._harmonic_percussive_split(audio)
+        harmonic_audio, onset_times = self._harmonic_percussive_split(audio)
 
         t, pitch_midi = PitchDetector.detect(harmonic_audio, PitchDetectorConfig())
-
-        # MVP assumptions.
-        bpm = 110
-        time_signature = (4, 4)
-        q = 16
-
-        roll = Roll(beats_per_minute=bpm, quantization=q, time_signature=time_signature)
 
         ncb = NoteCollectionBuilder(roll, pitch_midi, t, onset_times)
         notes = ncb.build()
 
-        return roll, notes
+        return notes

@@ -6,7 +6,6 @@ from common.structures.note import Note
 from common.structures.pitch import Pitch
 from common.structures.interval import Interval
 
-from generation.chord_progression import ChordProgression
 from generation.instruments.base import (
     MIDIInstrument,
     MIDIInstrumentExportConfig,
@@ -27,9 +26,9 @@ class Piano(MIDIInstrument):
             channel=0,
         )
 
-    def generate(self, chord_progression: ChordProgression):
-        chord_voicings = PianoChordVoicer.generate(chord_progression)
-        for i, chord in enumerate(chord_progression.chords):
+    def generate(self):
+        chord_voicings = PianoChordVoicer.generate(self._parent.chord_progression)
+        for i, chord in enumerate(self._parent.chord_progression.chords):
             self._add_stride_pattern(
                 chord.chord,
                 chord_voicings[i],

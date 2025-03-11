@@ -9,7 +9,9 @@ from midiutil.MidiFile import MIDIFile  # type: ignore
 
 from common.util import db_to_strength
 from common.audio_data import AudioData
+from common.note_collection import NoteCollection
 
+from generation.chord_progression import ChordProgression
 import generation.instruments.base as instrument
 
 
@@ -53,6 +55,8 @@ class Roll:
         self._quantization = quantization
         self._time_signature = time_signature
         self._instruments: Dict[str, instrument.Instrument] = dict()
+        self._melody: NoteCollection = NoteCollection()
+        self._chord_progression: ChordProgression = ChordProgression(0, 0)
 
     def Duration(self, duration: float) -> int:
         return round(duration / self.beat_duration * self.quantization)
@@ -76,6 +80,20 @@ class Roll:
     def beat_duration(self) -> int:
         return self._time_signature[1]
 
+    @property
+    def melody(self):
+        return self._melody
+
+    def set_melody(self, melody: NoteCollection):
+        self._melody = melody
+
+    @property
+    def chord_progression(self):
+        return self._chord_progression
+
+    def set_chord_progression(self, chord_progression: ChordProgression):
+        self._chord_progression = chord_progression
+
     def get_instrument(self, name: str) -> instrument.Instrument:
         assert name in self._instruments
         return self._instruments[name]
@@ -91,6 +109,11 @@ class Roll:
         assert name not in self._instruments
         self._instruments[name] = type(parent=self, name=name)
         return self.get_instrument(name)
+
+    def generate(self):
+        assert self.melody is not None and self.chord_progression is not None
+        for ins in self.list_instruments():
+            ins.generate()
 
     def export(self, config: RollExportConfig):
         midi_instruments, sampled_instruments = self._get_instruments_by_type()

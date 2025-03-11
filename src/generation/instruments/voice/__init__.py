@@ -1,5 +1,4 @@
 from common.roll import Roll
-from common.note_collection import NoteCollection
 
 from generation.instruments.base import (
     SampledInstrument,
@@ -18,8 +17,5 @@ class Voice(SampledInstrument):
             sample_src="piranha_plant",
         )
 
-    def generate(
-        self,
-        note_collection: NoteCollection,
-    ):
-        self.notes.add(*note_collection.list())
+    def generate(self):
+        self.notes.add(*self._parent.melody.list())

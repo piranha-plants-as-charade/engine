@@ -51,10 +51,18 @@ class Chord:
     root: Pitch
     quality: ChordQuality
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Chord):
+            return False
+        return len(self.get_pitches().symmetric_difference(other.get_pitches())) == 0
+
     def get_pitches(self) -> FrozenSet[Pitch]:
+        reference_pitch = Pitch(64)  # a frame of reference; can be any pitch
         return frozenset(
             [
-                Pitch((self.root + iv).value, chord_degree=iv.chord_degree)
+                Pitch(
+                    (self.root + iv).value, chord_degree=iv.chord_degree
+                ).reoctave_near_pitch(reference_pitch)
                 for iv in self.quality.value.intervals
             ]
         )

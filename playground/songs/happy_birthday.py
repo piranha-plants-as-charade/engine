@@ -42,11 +42,11 @@ def get_song():
         Note(Pitch.from_str("C5"), roll.Time(8, 0), roll.Duration(1)),
     )
 
-    chords = ChordProgression(
+    chord_progression = ChordProgression(
         start_time=roll.Time(0, 0),
         end_time=roll.Time(8, 2),
     )
-    chords.add_chords(
+    chord_progression.add_chords(
         (Chord(Pitch.from_str("C"), ChordQuality.Maj), roll.Time(0, 0)),
         (Chord(Pitch.from_str("C"), ChordQuality.Maj), roll.Time(1, 0)),
         (Chord(Pitch.from_str("D"), ChordQuality.Dom7), roll.Time(1, 2)),
@@ -67,4 +67,7 @@ def get_song():
         (Chord(Pitch.from_str("C"), ChordQuality.Maj), roll.Time(8, 0)),
     )
 
-    return roll, melody, chords
+    roll.set_melody(melody)
+    roll.set_chord_progression(chord_progression)
+
+    return roll
