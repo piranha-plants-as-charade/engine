@@ -25,8 +25,8 @@ class Interval:
             chord_degree=chord_degree,
         )
 
-    def __add__(self, val: "Interval") -> "Interval":
-        return Interval(self.value + val.value)
+    def __add__(self, other: "Interval") -> "Interval":
+        return Interval(self.value + other.value)
 
-    def __sub__(self, val: "Interval") -> "Interval":
-        return Interval(self.value - val.value)
+    def __sub__(self, other: "Interval") -> "Interval":
+        return Interval(self.value - other.value)

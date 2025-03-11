@@ -6,7 +6,7 @@ from typing import Tuple, Dict
 from numpy.typing import NDArray
 from functools import cache
 
-from common import is_wav_media_type
+from common.util import is_wav_media_type
 from common.audio_data import AudioData
 from common.structures.pitch import Pitch
 

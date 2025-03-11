@@ -27,11 +27,11 @@ class Pitch:
             chord_degree=chord_degree,
         )
 
-    def __add__(self, val: Interval) -> "Pitch":
-        return Pitch(self.value + val.value)  # discard `chord_degree`
+    def __add__(self, other: Interval) -> "Pitch":
+        return Pitch(self.value + other.value)  # discard `chord_degree`
 
-    def __sub__(self, val: Interval) -> "Pitch":
-        return Pitch(self.value - val.value)  # discard `chord_degree`
+    def __sub__(self, other: Interval) -> "Pitch":
+        return Pitch(self.value - other.value)  # discard `chord_degree`
 
     def reoctave_near_pitch(
         self,

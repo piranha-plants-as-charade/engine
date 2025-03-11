@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Tuple, Dict, List, Type
 from midiutil.MidiFile import MIDIFile  # type: ignore
 
-from common import db_to_strength
+from common.util import db_to_strength
 from common.audio_data import AudioData
 
 import generation.instruments.base as instrument
@@ -112,10 +112,10 @@ class Roll:
         midi_instruments: List[instrument.MIDIInstrument] = list()
         sampled_instruments: List[instrument.SampledInstrument] = list()
         for ins in self.list_instruments():
-            if issubclass(ins.__class__, instrument.MIDIInstrument):
-                midi_instruments.append(ins)  # type: ignore
-            elif issubclass(ins.__class__, instrument.SampledInstrument):
-                sampled_instruments.append(ins)  # type: ignore
+            if isinstance(ins, instrument.MIDIInstrument):
+                midi_instruments.append(ins)
+            elif isinstance(ins, instrument.SampledInstrument):
+                sampled_instruments.append(ins)
 
         return (midi_instruments, sampled_instruments)
 
