@@ -2,7 +2,7 @@ import os
 
 from env import ENV
 
-from common.roll import Roll, RollExportConfig
+from common.roll import Roll, RollConfig, RollExportConfig
 
 from melody_extraction.melody_extractor import MelodyExtractor
 
@@ -19,18 +19,16 @@ async def generate(input_path: str) -> str:
     output_path = os.path.join(ENV.OUTPUT_DIR, f"{name}.wav")
 
     # MVP assumptions.
-    beats_per_minute = 110
-    time_signature = (4, 4)
-    quantization = 16
-
-    roll = Roll(
-        beats_per_minute=beats_per_minute,
-        quantization=quantization,
-        time_signature=time_signature,
+    roll_config = RollConfig(
+        beats_per_minute=110,
+        time_signature=(4, 4),
+        quantization=16,
     )
 
+    roll = Roll(roll_config)
+
     melody_extractor = MelodyExtractor()
-    melody = melody_extractor.extract_melody(roll, input_path)
+    melody = melody_extractor.extract_melody(roll_config, input_path)
 
     chord_progression_generator = ChordProgressionGenerator(roll)
     chord_progression = chord_progression_generator.generate()

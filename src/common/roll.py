@@ -36,24 +36,31 @@ class RollExportConfig:
         return int(self.start_padding * self.sample_rate)
 
 
-class Roll:
+@dataclass(frozen=True)
+class RollConfig:
     """
-    The representation for a song.
-
     :param beats_per_minute: The beats per minute in terms of the time signature beat.
     :param quantization: The minimum unit of time (e.g. quantization = 16 means quantize by 16th notes)
     :param time_signature: The time signature of the song.
     """
 
-    def __init__(
-        self,
-        beats_per_minute: int,
-        quantization: int = 16,
-        time_signature: Tuple[int, int] = (4, 4),
-    ):
-        self._beats_per_minute = beats_per_minute
-        self._quantization = quantization
-        self._time_signature = time_signature
+    beats_per_minute: int
+    time_signature: Tuple[int, int]
+    quantization: int = 16
+
+    @property
+    def beats_per_measure(self) -> int:
+        return self.time_signature[0]
+
+    @property
+    def beat_duration(self) -> int:
+        return self.time_signature[1]
+
+
+class Roll:
+
+    def __init__(self, config: RollConfig):
+        self._config = config
         self._instruments: Dict[str, instrument.Instrument] = dict()
         self._melody: NoteCollection = NoteCollection()
         self._chord_progression: ChordProgression = ChordProgression(0, 0)
@@ -66,19 +73,19 @@ class Roll:
 
     @property
     def beats_per_minute(self) -> int:
-        return self._beats_per_minute
+        return self._config.beats_per_minute
 
     @property
     def quantization(self) -> int:
-        return self._quantization
+        return self._config.quantization
 
     @property
     def beats_per_measure(self) -> int:
-        return self._time_signature[0]
+        return self._config.time_signature[0]
 
     @property
     def beat_duration(self) -> int:
-        return self._time_signature[1]
+        return self._config.time_signature[1]
 
     @property
     def melody(self):

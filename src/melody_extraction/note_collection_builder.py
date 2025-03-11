@@ -3,14 +3,14 @@ from numpy.typing import NDArray
 from common.note_collection import NoteCollection
 from common.structures.note import Note
 from common.structures.pitch import Pitch
-from common.roll import Roll
+from common.roll import RollConfig
 from melody_extraction.util import mode
 
 
 class NoteCollectionBuilder:
     def __init__(
         self,
-        parent: Roll,
+        roll_config: RollConfig,
         pitch_midi: NDArray[np.float16],
         pitch_t: NDArray[np.float64],
         onset_times: NDArray[np.int32],
@@ -18,21 +18,20 @@ class NoteCollectionBuilder:
         """
         A class to build a NoteCollection from a Roll and midi pitch data.
 
-        :param parent: The parent Roll.
+        :param roll_config: The roll config..
         :param pitch_midi: The midi pitch data.
         :param pitch_t: The time data for the pitch data.
         :param onset_times: The onset times for the percussive elements.
         """
-        self._roll = parent
         self._pitch_t = pitch_t
         self._pitch_midi = pitch_midi
         self._onset_times = onset_times
 
         self._dt = pitch_t[1] - pitch_t[0]
 
-        self._units_per_beat = self._roll.quantization // self._roll.beats_per_measure
+        self._units_per_beat = roll_config.quantization // roll_config.beats_per_measure
         self._frames_per_unit = (
-            (1 / self._dt) * 60 / self._roll.beats_per_minute / self._units_per_beat
+            (1 / self._dt) * 60 / roll_config.beats_per_minute / self._units_per_beat
         )
 
     def _start_note(self, unit_count: int, note_value: int):

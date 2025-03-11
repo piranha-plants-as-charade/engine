@@ -1,4 +1,4 @@
-from common.roll import Roll
+from common.roll import Roll, RollConfig
 from common.note_collection import NoteCollection
 from common.structures.note import Note
 from common.structures.chord import Chord, ChordQuality
@@ -17,8 +17,10 @@ V = Chord(key + Interval.from_str("5"), ChordQuality.Maj)
 
 def get_song():
     roll = Roll(
-        beats_per_minute=110,
-        time_signature=(4, 4),
+        RollConfig(
+            beats_per_minute=110,
+            time_signature=(4, 4),
+        )
     )
 
     melody = NoteCollection()
