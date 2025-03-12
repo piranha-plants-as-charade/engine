@@ -1,4 +1,4 @@
-from common.arrangement_generator import ArrangementMetadata
+from common.arrangement import ArrangementMetadata
 from common.part import SampledPart
 from common.note_collection import NoteCollection
 

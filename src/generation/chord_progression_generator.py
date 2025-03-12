@@ -4,7 +4,7 @@ from typing import FrozenSet, Tuple, List
 from functools import cached_property
 from collections import deque
 
-from common.arrangement_generator import ArrangementMetadata
+from common.arrangement import ArrangementMetadata
 from common.note_collection import NoteCollection
 from common.structures.pitch import Pitch
 from common.structures.interval import Interval

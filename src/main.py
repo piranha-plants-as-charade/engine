@@ -2,7 +2,8 @@ import os
 
 from env import ENV
 
-from common.arrangement_generator import ArrangementGenerator, ArrangementExportConfig, ArrangementMetadata
+from common.arrangement import ArrangementExportConfig, ArrangementMetadata
+from common.arrangement_generator import ArrangementGenerator
 
 from melody_extraction.melody_extractor import MelodyExtractor
 
@@ -33,11 +34,17 @@ async def generate(input_path: str) -> str:
     )
     chord_progression = chord_progression_generator.generate()
 
-    arrangement = ArrangementGenerator(melody, chord_progression, arrangement_metadata)
-    arrangement.add_instrument("Voice 1", Voice)
-    arrangement.add_instrument("Piano", Piano)
-    arrangement.add_instrument("Bass Drum", BassDrum)
-    arrangement.add_instrument("Snare Drum", SnareDrum)
+    arrangement_generator = ArrangementGenerator(
+        melody,
+        chord_progression,
+        arrangement_metadata,
+    )
+    arrangement_generator.add_instrument("Voice 1", Voice)
+    arrangement_generator.add_instrument("Piano", Piano)
+    arrangement_generator.add_instrument("Bass Drum", BassDrum)
+    arrangement_generator.add_instrument("Snare Drum", SnareDrum)
+
+    arrangement = arrangement_generator.generate()
 
     arrangement.export(ArrangementExportConfig(output_path))
 

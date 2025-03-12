@@ -4,7 +4,7 @@ from numpy.typing import NDArray
 from typing import Tuple
 from common.audio_data import AudioData
 from common.note_collection import NoteCollection
-from common.arrangement_generator import ArrangementMetadata
+from common.arrangement import ArrangementMetadata
 from melody_extraction.note_collection_builder import NoteCollectionBuilder
 from melody_extraction.pitch_detector import PitchDetector, PitchDetectorConfig
 

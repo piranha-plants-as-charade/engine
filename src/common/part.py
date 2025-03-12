@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from midiutil.MidiFile import MIDIFile  # type: ignore
 
-import common.arrangement_generator as arrangement_generator
+import common.arrangement as arrangement
 from common.note_collection import NoteCollection
 from common.audio_data import AudioData
 from common.audio_sample import (
@@ -19,7 +19,7 @@ class Part:
 
     def __init__(
         self,
-        arrangement_metadata: arrangement_generator.ArrangementMetadata,
+        arrangement_metadata: arrangement.ArrangementMetadata,
         instrument: instruments.Instrument,
         notes: NoteCollection,
     ):
@@ -36,7 +36,7 @@ class MIDIPart(Part):
 
     def __init__(
         self,
-        arrangement_metadata: arrangement_generator.ArrangementMetadata,
+        arrangement_metadata: arrangement.ArrangementMetadata,
         instrument: instruments.MIDIInstrument,
         notes: NoteCollection,
     ):
@@ -80,13 +80,13 @@ class SampledPart(Part):
 
     def __init__(
         self,
-        arrangement_metadata: arrangement_generator.ArrangementMetadata,
+        arrangement_metadata: arrangement.ArrangementMetadata,
         instrument: instruments.SampledInstrument,
         notes: NoteCollection,
     ):
         super().__init__(arrangement_metadata, instrument, notes)
 
-    def get_audio_data(self, config: arrangement_generator.ArrangementExportConfig) -> AudioData:
+    def get_audio_data(self, config: arrangement.ArrangementExportConfig) -> AudioData:
         assert isinstance(self._instrument, instruments.SampledInstrument)
 
         def to_sample_time(time: float) -> int:
