@@ -4,7 +4,7 @@ from numpy.typing import NDArray
 from typing import Tuple
 from common.audio_data import AudioData
 from common.note_collection import NoteCollection
-from common.roll import RollConfig
+from common.arrangement_generator import ArrangementMetadata
 from melody_extraction.note_collection_builder import NoteCollectionBuilder
 from melody_extraction.pitch_detector import PitchDetector, PitchDetectorConfig
 
@@ -37,12 +37,12 @@ class MelodyExtractor:
 
         return AudioData(harmonic_signal, audio.sample_rate), onset_times
 
-    def extract_melody(self, roll_config: RollConfig, input_path: str) -> NoteCollection:
+    def extract_melody(self, arrangement_metadata: ArrangementMetadata, input_path: str) -> NoteCollection:
         """
-        Extract the melody from the given audio file to a Roll and NoteCollection.
+        Extract the melody from the given audio file to an Arrangement and NoteCollection.
 
         :param input_path: The path to the audio file.
-        :return: A tuple containing the Roll and NoteCollection.
+        :return: A tuple containing the Arrangement and NoteCollection.
         """
         audio = AudioData.from_file(input_path)
 
@@ -50,7 +50,7 @@ class MelodyExtractor:
 
         t, pitch_midi = PitchDetector.detect(harmonic_audio, PitchDetectorConfig())
 
-        ncb = NoteCollectionBuilder(roll_config, pitch_midi, t, onset_times)
+        ncb = NoteCollectionBuilder(arrangement_metadata, pitch_midi, t, onset_times)
         notes = ncb.build()
 
         return notes

@@ -17,28 +17,7 @@ import generation.instruments.base as instrument
 
 
 @dataclass(frozen=True)
-class RollExportConfig:
-    """
-    TODO
-    """
-
-    output_path: str
-    sample_rate: int = 44100
-    start_padding: float = 0.5  # in seconds
-    soundfont_url: str = (
-        "https://github.com/musescore/MuseScore/raw/refs/heads/master/share/sound/MS%20Basic.sf3"
-    )
-    soundfont_path: str = "../data/soundfonts/ms_basic.sf3"
-    midi_db: float = 11
-    sample_db: float = 0
-
-    @property
-    def start_padding_size(self) -> int:
-        return int(self.start_padding * self.sample_rate)
-
-
-@dataclass(frozen=True)
-class RollConfig:
+class ArrangementMetadata:
     """
     :param beats_per_minute: The beats per minute in terms of the time signature beat.
     :param quantization: The minimum unit of time (e.g. quantization = 16 means quantize by 16th notes)
@@ -64,22 +43,43 @@ class RollConfig:
         return self.Duration((measure * self.beats_per_measure + beat))
 
 
-class Roll:
+@dataclass(frozen=True)
+class ArrangementExportConfig:
+    """
+    TODO
+    """
+
+    output_path: str
+    sample_rate: int = 44100
+    start_padding: float = 0.5  # in seconds
+    soundfont_url: str = (
+        "https://github.com/musescore/MuseScore/raw/refs/heads/master/share/sound/MS%20Basic.sf3"
+    )
+    soundfont_path: str = "../data/soundfonts/ms_basic.sf3"
+    midi_db: float = 11
+    sample_db: float = 0
+
+    @property
+    def start_padding_size(self) -> int:
+        return int(self.start_padding * self.sample_rate)
+
+
+class ArrangementGenerator:
 
     def __init__(
         self,
         melody: NoteCollection,
         chord_progression: ChordProgression,
-        config: RollConfig,
+        metadata: ArrangementMetadata,
     ):
         self._melody = melody
         self._chord_progression = chord_progression
-        self._config = config
+        self._metadata = metadata
         self._instruments: Dict[str, instrument.Instrument] = dict()
 
     @property
-    def config(self) -> RollConfig:
-        return self._config
+    def metadata(self) -> ArrangementMetadata:
+        return self._metadata
 
     @property
     def melody(self):
@@ -97,7 +97,7 @@ class Roll:
         assert name not in self._instruments
         self._instruments[name] = instrument_cls(name=name)
 
-    def export(self, config: RollExportConfig):
+    def export(self, config: ArrangementExportConfig):
 
         midi_parts, sampled_parts = self._get_instrument_parts_by_type()
 
@@ -123,26 +123,18 @@ class Roll:
         for ins in self._instruments.values():
             if isinstance(ins, instrument.MIDIInstrument):
                 midi_parts.append(
-                    ins.generate(
-                        self.melody,
-                        self.chord_progression,
-                        self.config,
-                    )
+                    ins.generate(self.melody, self.chord_progression, self.metadata)
                 )
             elif isinstance(ins, instrument.SampledInstrument):
                 sampled_parts.append(
-                    ins.generate(
-                        self.melody,
-                        self.chord_progression,
-                        self.config,
-                    )
+                    ins.generate(self.melody, self.chord_progression, self.metadata)
                 )
 
         return (midi_parts, sampled_parts)
 
     def _midi_to_audio_data(
         self,
-        config: RollExportConfig,
+        config: ArrangementExportConfig,
         parts: List[part.MIDIPart],
     ) -> AudioData:
         if len(parts) == 0:
@@ -160,7 +152,7 @@ class Roll:
         # Create MIDI data.
         midi_data = MIDIFile(
             numTracks=len(parts),
-            ticks_per_quarternote=self.config.quantization,
+            ticks_per_quarternote=self.metadata.quantization,
         )
         for track, ins in enumerate(parts):
             ins.add_notes_to_track(midi_data, track)

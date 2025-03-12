@@ -2,7 +2,7 @@ import os
 
 from env import ENV
 
-from common.roll import Roll, RollConfig, RollExportConfig
+from common.arrangement_generator import ArrangementGenerator, ArrangementExportConfig, ArrangementMetadata
 
 from melody_extraction.melody_extractor import MelodyExtractor
 
@@ -19,24 +19,26 @@ async def generate(input_path: str) -> str:
     output_path = os.path.join(ENV.OUTPUT_DIR, f"{name}.wav")
 
     # MVP assumptions.
-    roll_config = RollConfig(
+    arrangement_metadata = ArrangementMetadata(
         beats_per_minute=110,
         time_signature=(4, 4),
         quantization=16,
     )
 
     melody_extractor = MelodyExtractor()
-    melody = melody_extractor.extract_melody(roll_config, input_path)
+    melody = melody_extractor.extract_melody(arrangement_metadata, input_path)
 
-    chord_progression_generator = ChordProgressionGenerator(roll_config, melody)
+    chord_progression_generator = ChordProgressionGenerator(
+        arrangement_metadata, melody
+    )
     chord_progression = chord_progression_generator.generate()
 
-    roll = Roll(melody, chord_progression, roll_config)
-    roll.add_instrument("Voice 1", Voice)
-    roll.add_instrument("Piano", Piano)
-    roll.add_instrument("Bass Drum", BassDrum)
-    roll.add_instrument("Snare Drum", SnareDrum)
+    arrangement = ArrangementGenerator(melody, chord_progression, arrangement_metadata)
+    arrangement.add_instrument("Voice 1", Voice)
+    arrangement.add_instrument("Piano", Piano)
+    arrangement.add_instrument("Bass Drum", BassDrum)
+    arrangement.add_instrument("Snare Drum", SnareDrum)
 
-    roll.export(RollExportConfig(output_path))
+    arrangement.export(ArrangementExportConfig(output_path))
 
     return output_path

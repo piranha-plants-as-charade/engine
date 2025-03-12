@@ -4,7 +4,7 @@ from typing import FrozenSet, Tuple, List
 from functools import cached_property
 from collections import deque
 
-from common.roll import RollConfig
+from common.arrangement_generator import ArrangementMetadata
 from common.note_collection import NoteCollection
 from common.structures.pitch import Pitch
 from common.structures.interval import Interval
@@ -15,7 +15,7 @@ from generation.chord_progression import ChordProgression
 
 @dataclass(frozen=True)
 class _FSMStateContext:
-    roll_config: RollConfig
+    arrangement_metadata: ArrangementMetadata
     melody: NoteCollection
     hop_size: float = 1 / 2  # fraction of a measure
 
@@ -42,8 +42,8 @@ class _FSMState:
         if self.start_time <= 0:
             return []
 
-        measure_duration = self.context.roll_config.Duration(
-            self.context.roll_config.beats_per_measure
+        measure_duration = self.context.arrangement_metadata.Duration(
+            self.context.arrangement_metadata.beats_per_measure
         )
         hop_duration = round(measure_duration * self.context.hop_size)
         next_time_interval = (
@@ -94,20 +94,20 @@ class ChordProgressionGenerator:
     chord_IV = Chord(tonic + Interval.from_str("4"), ChordQuality.Maj)
     chord_V = Chord(tonic + Interval.from_str("5"), ChordQuality.Maj)
 
-    def __init__(self, roll_config: RollConfig, melody: NoteCollection):
+    def __init__(self, arrangement_metadata: ArrangementMetadata, melody: NoteCollection):
 
         melody_end_time = max([note.end for note in melody.list()])
-        melody_end_measure = melody_end_time // roll_config.Duration(
-            roll_config.beats_per_measure
+        melody_end_measure = melody_end_time // arrangement_metadata.Duration(
+            arrangement_metadata.beats_per_measure
         )
 
         self.starting_state = _FSMState(
-            context=_FSMStateContext(roll_config, melody),
+            context=_FSMStateContext(arrangement_metadata, melody),
             chord=ChordProgressionGenerator.chord_I,
             prev_state=None,
             time_interval=(
-                roll_config.Time(melody_end_measure, 0),
-                roll_config.Time(melody_end_measure + 1, 0),
+                arrangement_metadata.Time(melody_end_measure, 0),
+                arrangement_metadata.Time(melody_end_measure + 1, 0),
             ),
         )
 

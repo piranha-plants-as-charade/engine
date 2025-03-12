@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-import common.roll as roll
+import common.arrangement_generator as arrangement_generator
 import common.part as part
 from common.note_collection import NoteCollection
 
@@ -34,7 +34,7 @@ class Instrument(ABC):
         self,
         melody: NoteCollection,
         chord_progression: ChordProgression,
-        roll_config: roll.RollConfig,
+        arrangement_metadata: arrangement_generator.ArrangementMetadata,
     ) -> part.Part:
         pass
 
@@ -58,7 +58,7 @@ class MIDIInstrument(Instrument):
         self,
         melody: NoteCollection,
         chord_progression: ChordProgression,
-        roll_config: roll.RollConfig,
+        arrangement_metadata: arrangement_generator.ArrangementMetadata,
     ) -> part.MIDIPart:
         pass
 
@@ -80,6 +80,6 @@ class SampledInstrument(Instrument):
         self,
         melody: NoteCollection,
         chord_progression: ChordProgression,
-        roll_config: roll.RollConfig,
+        arrangement_metadata: arrangement_generator.ArrangementMetadata,
     ) -> part.SampledPart:
         pass

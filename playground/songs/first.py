@@ -1,4 +1,4 @@
-from common.roll import Roll, RollConfig
+from common.arrangement_generator import ArrangementGenerator, ArrangementMetadata
 from common.note_collection import NoteCollection
 from common.structures.note import Note
 from common.structures.chord import Chord, ChordQuality
@@ -16,46 +16,104 @@ V = Chord(key + Interval.from_str("5"), ChordQuality.Maj)
 
 
 def get_song():
-    roll_config = RollConfig(
+    arrangement_metadata = ArrangementMetadata(
         beats_per_minute=110,
         time_signature=(4, 4),
     )
 
     melody = NoteCollection()
     melody.add(
-        Note(Pitch.from_str("C5"), roll_config.Time(0, 0), roll_config.Duration(2)),
-        Note(Pitch.from_str("C#5"), roll_config.Time(0, 3), roll_config.Duration(1)),
-        Note(Pitch.from_str("D5"), roll_config.Time(1, 0), roll_config.Duration(1)),
-        Note(Pitch.from_str("F5"), roll_config.Time(1, 1), roll_config.Duration(1)),
-        Note(Pitch.from_str("A4"), roll_config.Time(1, 2), roll_config.Duration(1)),
-        Note(Pitch.from_str("E5"), roll_config.Time(1, 3), roll_config.Duration(0.5)),
         Note(
-            Pitch.from_str("C#5"), roll_config.Time(1, 3.5), roll_config.Duration(0.5)
+            Pitch.from_str("C5"),
+            arrangement_metadata.Time(0, 0),
+            arrangement_metadata.Duration(2),
         ),
-        Note(Pitch.from_str("D5"), roll_config.Time(2, 0), roll_config.Duration(2)),
-        Note(Pitch.from_str("D#5"), roll_config.Time(2, 3), roll_config.Duration(1)),
-        Note(Pitch.from_str("E5"), roll_config.Time(3, 0), roll_config.Duration(1)),
-        Note(Pitch.from_str("G5"), roll_config.Time(3, 1), roll_config.Duration(1)),
-        Note(Pitch.from_str("G4"), roll_config.Time(3, 2), roll_config.Duration(1)),
-        Note(Pitch.from_str("D5"), roll_config.Time(3, 3), roll_config.Duration(0.5)),
-        Note(Pitch.from_str("B4"), roll_config.Time(3, 3.5), roll_config.Duration(0.5)),
-        Note(Pitch.from_str("C5"), roll_config.Time(4, 0), roll_config.Duration(2)),
+        Note(
+            Pitch.from_str("C#5"),
+            arrangement_metadata.Time(0, 3),
+            arrangement_metadata.Duration(1),
+        ),
+        Note(
+            Pitch.from_str("D5"),
+            arrangement_metadata.Time(1, 0),
+            arrangement_metadata.Duration(1),
+        ),
+        Note(
+            Pitch.from_str("F5"),
+            arrangement_metadata.Time(1, 1),
+            arrangement_metadata.Duration(1),
+        ),
+        Note(
+            Pitch.from_str("A4"),
+            arrangement_metadata.Time(1, 2),
+            arrangement_metadata.Duration(1),
+        ),
+        Note(
+            Pitch.from_str("E5"),
+            arrangement_metadata.Time(1, 3),
+            arrangement_metadata.Duration(0.5),
+        ),
+        Note(
+            Pitch.from_str("C#5"),
+            arrangement_metadata.Time(1, 3.5),
+            arrangement_metadata.Duration(0.5),
+        ),
+        Note(
+            Pitch.from_str("D5"),
+            arrangement_metadata.Time(2, 0),
+            arrangement_metadata.Duration(2),
+        ),
+        Note(
+            Pitch.from_str("D#5"),
+            arrangement_metadata.Time(2, 3),
+            arrangement_metadata.Duration(1),
+        ),
+        Note(
+            Pitch.from_str("E5"),
+            arrangement_metadata.Time(3, 0),
+            arrangement_metadata.Duration(1),
+        ),
+        Note(
+            Pitch.from_str("G5"),
+            arrangement_metadata.Time(3, 1),
+            arrangement_metadata.Duration(1),
+        ),
+        Note(
+            Pitch.from_str("G4"),
+            arrangement_metadata.Time(3, 2),
+            arrangement_metadata.Duration(1),
+        ),
+        Note(
+            Pitch.from_str("D5"),
+            arrangement_metadata.Time(3, 3),
+            arrangement_metadata.Duration(0.5),
+        ),
+        Note(
+            Pitch.from_str("B4"),
+            arrangement_metadata.Time(3, 3.5),
+            arrangement_metadata.Duration(0.5),
+        ),
+        Note(
+            Pitch.from_str("C5"),
+            arrangement_metadata.Time(4, 0),
+            arrangement_metadata.Duration(2),
+        ),
     )
 
     chord_progression = ChordProgression(
-        start_time=roll_config.Time(0, 0),
-        end_time=roll_config.Time(4, 2),
+        start_time=arrangement_metadata.Time(0, 0),
+        end_time=arrangement_metadata.Time(5, 0),
     )
     chord_progression.add_chords(
-        (I, roll_config.Time(0, 0)),
-        (IV, roll_config.Time(1, 0)),
-        (ii, roll_config.Time(2, 0)),
-        (V, roll_config.Time(3, 0)),
-        (I, roll_config.Time(4, 0)),
-        (IV.get_V7(), roll_config.Time(0, 2)),
-        (ii.get_V7(), roll_config.Time(1, 2)),
-        (V.get_V7(), roll_config.Time(2, 2)),
-        (I.get_V7(), roll_config.Time(3, 2)),
+        (I, arrangement_metadata.Time(0, 0)),
+        (IV, arrangement_metadata.Time(1, 0)),
+        (ii, arrangement_metadata.Time(2, 0)),
+        (V, arrangement_metadata.Time(3, 0)),
+        (I, arrangement_metadata.Time(4, 0)),
+        (IV.get_V7(), arrangement_metadata.Time(0, 2)),
+        (ii.get_V7(), arrangement_metadata.Time(1, 2)),
+        (V.get_V7(), arrangement_metadata.Time(2, 2)),
+        (I.get_V7(), arrangement_metadata.Time(3, 2)),
     )
 
-    return Roll(melody, chord_progression, roll_config)
+    return ArrangementGenerator(melody, chord_progression, arrangement_metadata)
