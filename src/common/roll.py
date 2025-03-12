@@ -7,9 +7,11 @@ from dataclasses import dataclass
 from typing import Tuple, Dict, List, Type
 from midiutil.MidiFile import MIDIFile  # type: ignore
 
-from common import db_to_strength
+from common.util import db_to_strength
 from common.audio_data import AudioData
+from common.note_collection import NoteCollection
 
+from generation.chord_progression import ChordProgression
 import generation.instruments.base as instrument
 
 
@@ -34,25 +36,25 @@ class RollExportConfig:
         return int(self.start_padding * self.sample_rate)
 
 
-class Roll:
+@dataclass(frozen=True)
+class RollConfig:
     """
-    The representation for a song.
-
     :param beats_per_minute: The beats per minute in terms of the time signature beat.
     :param quantization: The minimum unit of time (e.g. quantization = 16 means quantize by 16th notes)
     :param time_signature: The time signature of the song.
     """
 
-    def __init__(
-        self,
-        beats_per_minute: int,
-        quantization: int = 16,
-        time_signature: Tuple[int, int] = (4, 4),
-    ):
-        self._beats_per_minute = beats_per_minute
-        self._quantization = quantization
-        self._time_signature = time_signature
-        self._instruments: Dict[str, instrument.Instrument] = dict()
+    beats_per_minute: int
+    time_signature: Tuple[int, int]
+    quantization: int = 16
+
+    @property
+    def beats_per_measure(self) -> int:
+        return self.time_signature[0]
+
+    @property
+    def beat_duration(self) -> int:
+        return self.time_signature[1]
 
     def Duration(self, duration: float) -> int:
         return round(duration / self.beat_duration * self.quantization)
@@ -60,21 +62,31 @@ class Roll:
     def Time(self, measure: int, beat: float) -> int:
         return self.Duration((measure * self.beats_per_measure + beat))
 
-    @property
-    def beats_per_minute(self) -> int:
-        return self._beats_per_minute
+
+class Roll:
+
+    def __init__(
+        self,
+        melody: NoteCollection,
+        chord_progression: ChordProgression,
+        config: RollConfig,
+    ):
+        self._melody = melody
+        self._chord_progression = chord_progression
+        self._config = config
+        self._instruments: Dict[str, instrument.Instrument] = dict()
 
     @property
-    def quantization(self) -> int:
-        return self._quantization
+    def config(self) -> RollConfig:
+        return self._config
 
     @property
-    def beats_per_measure(self) -> int:
-        return self._time_signature[0]
+    def melody(self):
+        return self._melody
 
     @property
-    def beat_duration(self) -> int:
-        return self._time_signature[1]
+    def chord_progression(self):
+        return self._chord_progression
 
     def get_instrument(self, name: str) -> instrument.Instrument:
         assert name in self._instruments
@@ -91,6 +103,10 @@ class Roll:
         assert name not in self._instruments
         self._instruments[name] = type(parent=self, name=name)
         return self.get_instrument(name)
+
+    def generate(self):
+        for ins in self.list_instruments():
+            ins.generate()
 
     def export(self, config: RollExportConfig):
         midi_instruments, sampled_instruments = self._get_instruments_by_type()
@@ -112,10 +128,10 @@ class Roll:
         midi_instruments: List[instrument.MIDIInstrument] = list()
         sampled_instruments: List[instrument.SampledInstrument] = list()
         for ins in self.list_instruments():
-            if issubclass(ins.__class__, instrument.MIDIInstrument):
-                midi_instruments.append(ins)  # type: ignore
-            elif issubclass(ins.__class__, instrument.SampledInstrument):
-                sampled_instruments.append(ins)  # type: ignore
+            if isinstance(ins, instrument.MIDIInstrument):
+                midi_instruments.append(ins)
+            elif isinstance(ins, instrument.SampledInstrument):
+                sampled_instruments.append(ins)
 
         return (midi_instruments, sampled_instruments)
 
@@ -139,7 +155,7 @@ class Roll:
         # Create MIDI data.
         midi_data = MIDIFile(
             numTracks=len(instruments),
-            ticks_per_quarternote=self.quantization,
+            ticks_per_quarternote=self.config.quantization,
         )
         for track, ins in enumerate(instruments):
             ins.add_notes_to_track(midi_data, track)

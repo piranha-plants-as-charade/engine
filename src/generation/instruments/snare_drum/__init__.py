@@ -1,5 +1,4 @@
 from common.roll import Roll
-from common.note_collection import NoteCollection
 from common.structures.note import Note
 from common.structures.pitch import Pitch
 
@@ -24,16 +23,13 @@ class SnareDrum(MIDIInstrument):
             volume=72,
         )
 
-    def generate(
-        self,
-        note_collection: NoteCollection,
-    ):
-        end = max([note.end for note in note_collection.list()])
+    def generate(self):
+        end = max([note.end for note in self._parent.melody.list()])
 
         measure = 0
-        while self._parent.Time(measure, 0) < end:
-            for beat in range(self._parent.beats_per_measure):
-                time = self._parent.Time(measure, beat)
+        while self._parent.config.Time(measure, 0) < end:
+            for beat in range(self._parent.config.beats_per_measure):
+                time = self._parent.config.Time(measure, beat)
                 self.notes.add(
                     Note(pitch=SNARE_DRUM_PITCH, start=time, duration=2),
                     Note(pitch=SNARE_DRUM_PITCH, start=time + 2, duration=1),

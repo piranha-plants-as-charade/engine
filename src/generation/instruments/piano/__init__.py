@@ -6,7 +6,6 @@ from common.structures.note import Note
 from common.structures.pitch import Pitch
 from common.structures.interval import Interval
 
-from generation.chord_progression import ChordProgression
 from generation.instruments.base import (
     MIDIInstrument,
     MIDIInstrumentExportConfig,
@@ -27,9 +26,9 @@ class Piano(MIDIInstrument):
             channel=0,
         )
 
-    def generate(self, chord_progression: ChordProgression):
-        chord_voicings = PianoChordVoicer.generate(chord_progression)
-        for i, chord in enumerate(chord_progression.chords):
+    def generate(self):
+        chord_voicings = PianoChordVoicer.generate(self._parent.chord_progression)
+        for i, chord in enumerate(self._parent.chord_progression.chords):
             self._add_stride_pattern(
                 chord.chord,
                 chord_voicings[i],
@@ -50,18 +49,18 @@ class Piano(MIDIInstrument):
                     Note(
                         pitch=chord.root,
                         start=time,
-                        duration=self._parent.Duration(1 / 2),
+                        duration=self._parent.config.Duration(1 / 2),
                     ).reoctave_near_pitch(Pitch.from_str("C3"))
                 )
             elif i % 8 == 4:
                 prev_pitch_set = self.notes.get_pitches_at_time(
-                    time - self._parent.Duration(1)
+                    time - self._parent.config.Duration(1)
                 )
                 self.notes.add(
                     Note(
                         pitch=chord.root + Interval.from_str("5"),
                         start=time,
-                        duration=self._parent.Duration(1 / 2),
+                        duration=self._parent.config.Duration(1 / 2),
                     ).reoctave_near_pitch(
                         list(prev_pitch_set)[0],
                         position="below",
@@ -73,7 +72,7 @@ class Piano(MIDIInstrument):
                         Note(
                             pitch=pitch,
                             start=time,
-                            duration=self._parent.Duration(1 / 4),
+                            duration=self._parent.config.Duration(1 / 4),
                         )
                         for pitch in chord_voicing
                     ]
