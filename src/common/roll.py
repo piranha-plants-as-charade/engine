@@ -8,6 +8,7 @@ from typing import Tuple, Dict, List, Type
 from midiutil.MidiFile import MIDIFile  # type: ignore
 
 from common.util import db_to_strength
+import common.part as part
 from common.audio_data import AudioData
 from common.note_collection import NoteCollection
 
@@ -88,59 +89,63 @@ class Roll:
     def chord_progression(self):
         return self._chord_progression
 
-    def get_instrument(self, name: str) -> instrument.Instrument:
-        assert name in self._instruments
-        return self._instruments[name]
-
-    def list_instruments(self) -> List[instrument.Instrument]:
-        return list(self._instruments.values())
-
     def add_instrument(
         self,
         name: str,
-        type: Type[instrument.Instrument],
-    ) -> instrument.Instrument:
+        instrument_cls: Type[instrument.Instrument],
+    ):
         assert name not in self._instruments
-        self._instruments[name] = type(parent=self, name=name)
-        return self.get_instrument(name)
-
-    def generate(self):
-        for ins in self.list_instruments():
-            ins.generate()
+        self._instruments[name] = instrument_cls(name=name)
 
     def export(self, config: RollExportConfig):
-        midi_instruments, sampled_instruments = self._get_instruments_by_type()
 
-        output = self._midi_to_audio_data(config, midi_instruments)
+        midi_parts, sampled_parts = self._get_instrument_parts_by_type()
+
+        output = self._midi_to_audio_data(config, midi_parts)
 
         # Add sampled instruments' WAV datas onto MIDI WAV data.
-        for ins in sampled_instruments:
-            array = ins.get_audio_data(config).array
+        for part in sampled_parts:
+            array = part.get_audio_data(config).array
             output.add_range((0, len(array)), array * db_to_strength(config.sample_db))
 
         # Export combined WAV data and close temporary files.
         wav.write(config.output_path, config.sample_rate, output.array)  # type: ignore
 
-    def _get_instruments_by_type(self) -> Tuple[
-        List[instrument.MIDIInstrument],
-        List[instrument.SampledInstrument],
+    def _get_instrument_parts_by_type(
+        self,
+    ) -> Tuple[
+        List[part.MIDIPart],
+        List[part.SampledPart],
     ]:
-        midi_instruments: List[instrument.MIDIInstrument] = list()
-        sampled_instruments: List[instrument.SampledInstrument] = list()
-        for ins in self.list_instruments():
-            if isinstance(ins, instrument.MIDIInstrument):
-                midi_instruments.append(ins)
-            elif isinstance(ins, instrument.SampledInstrument):
-                sampled_instruments.append(ins)
+        midi_parts: List[part.MIDIPart] = list()
+        sampled_parts: List[part.SampledPart] = list()
 
-        return (midi_instruments, sampled_instruments)
+        for ins in self._instruments.values():
+            if isinstance(ins, instrument.MIDIInstrument):
+                midi_parts.append(
+                    ins.generate(
+                        self.melody,
+                        self.chord_progression,
+                        self.config,
+                    )
+                )
+            elif isinstance(ins, instrument.SampledInstrument):
+                sampled_parts.append(
+                    ins.generate(
+                        self.melody,
+                        self.chord_progression,
+                        self.config,
+                    )
+                )
+
+        return (midi_parts, sampled_parts)
 
     def _midi_to_audio_data(
         self,
         config: RollExportConfig,
-        instruments: List[instrument.MIDIInstrument],
+        parts: List[part.MIDIPart],
     ) -> AudioData:
-        if len(instruments) == 0:
+        if len(parts) == 0:
             return AudioData()
 
         # Download soundfont if missing.
@@ -154,10 +159,10 @@ class Roll:
 
         # Create MIDI data.
         midi_data = MIDIFile(
-            numTracks=len(instruments),
+            numTracks=len(parts),
             ticks_per_quarternote=self.config.quantization,
         )
-        for track, ins in enumerate(instruments):
+        for track, ins in enumerate(parts):
             ins.add_notes_to_track(midi_data, track)
 
         # Write MIDI data to MIDI file.

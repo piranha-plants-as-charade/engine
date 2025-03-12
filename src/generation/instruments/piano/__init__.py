@@ -1,11 +1,14 @@
 from typing import FrozenSet
 
-from common.roll import Roll
+from common.roll import RollConfig
+from common.part import MIDIPart
+from common.note_collection import NoteCollection
 from common.structures.chord import Chord
 from common.structures.note import Note
 from common.structures.pitch import Pitch
 from common.structures.interval import Interval
 
+from generation.chord_progression import ChordProgression
 from generation.instruments.base import (
     MIDIInstrument,
     MIDIInstrumentExportConfig,
@@ -16,8 +19,8 @@ from .chord_voicer import PianoChordVoicer
 
 class Piano(MIDIInstrument):
 
-    def __init__(self, parent: Roll, name: str):
-        super().__init__(parent, name)
+    def __init__(self, name: str):
+        super().__init__(name)
 
     @property
     def export_config(self) -> MIDIInstrumentExportConfig:
@@ -26,18 +29,29 @@ class Piano(MIDIInstrument):
             channel=0,
         )
 
-    def generate(self):
-        chord_voicings = PianoChordVoicer.generate(self._parent.chord_progression)
-        for i, chord in enumerate(self._parent.chord_progression.chords):
+    def generate(
+        self,
+        melody: NoteCollection,
+        chord_progression: ChordProgression,
+        roll_config: RollConfig,
+    ) -> MIDIPart:
+        notes = NoteCollection()
+        chord_voicings = PianoChordVoicer.generate(chord_progression)
+        for i, chord in enumerate(chord_progression.chords):
             self._add_stride_pattern(
+                roll_config,
+                notes,
                 chord.chord,
                 chord_voicings[i],
                 chord.start_time,
                 chord.end_time,
             )
+        return MIDIPart(roll_config, self, notes)
 
     def _add_stride_pattern(
         self,
+        roll_config: RollConfig,
+        notes: NoteCollection,
         chord: Chord,
         chord_voicing: FrozenSet[Pitch],
         start: int,
@@ -45,34 +59,34 @@ class Piano(MIDIInstrument):
     ):
         for i, time in enumerate(range(start, end)):
             if i % 8 == 0:
-                self.notes.add(
+                notes.add(
                     Note(
                         pitch=chord.root,
                         start=time,
-                        duration=self._parent.config.Duration(1 / 2),
+                        duration=roll_config.Duration(1 / 2),
                     ).reoctave_near_pitch(Pitch.from_str("C3"))
                 )
             elif i % 8 == 4:
-                prev_pitch_set = self.notes.get_pitches_at_time(
-                    time - self._parent.config.Duration(1)
+                prev_pitch_set = notes.get_pitches_at_time(
+                    time - roll_config.Duration(1)
                 )
-                self.notes.add(
+                notes.add(
                     Note(
                         pitch=chord.root + Interval.from_str("5"),
                         start=time,
-                        duration=self._parent.config.Duration(1 / 2),
+                        duration=roll_config.Duration(1 / 2),
                     ).reoctave_near_pitch(
                         list(prev_pitch_set)[0],
                         position="below",
                     )
                 )
             elif i % 4 == 2:
-                self.notes.add(
+                notes.add(
                     *[
                         Note(
                             pitch=pitch,
                             start=time,
-                            duration=self._parent.config.Duration(1 / 4),
+                            duration=roll_config.Duration(1 / 4),
                         )
                         for pitch in chord_voicing
                     ]
