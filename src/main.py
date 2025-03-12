@@ -36,7 +36,7 @@ async def generate(input_path: str) -> str:
     roll.add_instrument("Piano", Piano)
     roll.add_instrument("Bass Drum", BassDrum)
     roll.add_instrument("Snare Drum", SnareDrum)
-    roll.generate()
+
     roll.export(RollExportConfig(output_path))
 
     return output_path
