@@ -1,4 +1,4 @@
-from common.roll import RollConfig
+from common.arrangement import ArrangementMetadata
 from common.part import MIDIPart
 from common.note_collection import NoteCollection
 from common.structures.note import Note
@@ -30,19 +30,19 @@ class SnareDrum(MIDIInstrument):
         self,
         melody: NoteCollection,
         chord_progression: ChordProgression,
-        roll_config: RollConfig,
+        arrangement_metadata: ArrangementMetadata,
     ) -> MIDIPart:
         notes = NoteCollection()
         end = max([note.end for note in melody.list()])
 
         measure = 0
-        while roll_config.Time(measure, 0) < end:
-            for beat in range(roll_config.beats_per_measure):
-                time = roll_config.Time(measure, beat)
+        while arrangement_metadata.Time(measure, 0) < end:
+            for beat in range(arrangement_metadata.beats_per_measure):
+                time = arrangement_metadata.Time(measure, beat)
                 notes.add(
                     Note(pitch=SNARE_DRUM_PITCH, start=time, duration=2),
                     Note(pitch=SNARE_DRUM_PITCH, start=time + 2, duration=1),
                     Note(pitch=SNARE_DRUM_PITCH, start=time + 3, duration=1),
                 )
             measure += 1
-        return MIDIPart(roll_config, self, notes)
+        return MIDIPart(arrangement_metadata, self, notes)

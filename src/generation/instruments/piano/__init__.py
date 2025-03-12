@@ -1,6 +1,6 @@
 from typing import FrozenSet
 
-from common.roll import RollConfig
+from common.arrangement import ArrangementMetadata
 from common.part import MIDIPart
 from common.note_collection import NoteCollection
 from common.structures.chord import Chord
@@ -33,24 +33,24 @@ class Piano(MIDIInstrument):
         self,
         melody: NoteCollection,
         chord_progression: ChordProgression,
-        roll_config: RollConfig,
+        arrangement_metadata: ArrangementMetadata,
     ) -> MIDIPart:
         notes = NoteCollection()
         chord_voicings = PianoChordVoicer.generate(chord_progression)
         for i, chord in enumerate(chord_progression.chords):
             self._add_stride_pattern(
-                roll_config,
+                arrangement_metadata,
                 notes,
                 chord.chord,
                 chord_voicings[i],
                 chord.start_time,
                 chord.end_time,
             )
-        return MIDIPart(roll_config, self, notes)
+        return MIDIPart(arrangement_metadata, self, notes)
 
     def _add_stride_pattern(
         self,
-        roll_config: RollConfig,
+        arrangement_metadata: ArrangementMetadata,
         notes: NoteCollection,
         chord: Chord,
         chord_voicing: FrozenSet[Pitch],
@@ -63,18 +63,18 @@ class Piano(MIDIInstrument):
                     Note(
                         pitch=chord.root,
                         start=time,
-                        duration=roll_config.Duration(1 / 2),
+                        duration=arrangement_metadata.Duration(1 / 2),
                     ).reoctave_near_pitch(Pitch.from_str("C3"))
                 )
             elif i % 8 == 4:
                 prev_pitch_set = notes.get_pitches_at_time(
-                    time - roll_config.Duration(1)
+                    time - arrangement_metadata.Duration(1)
                 )
                 notes.add(
                     Note(
                         pitch=chord.root + Interval.from_str("5"),
                         start=time,
-                        duration=roll_config.Duration(1 / 2),
+                        duration=arrangement_metadata.Duration(1 / 2),
                     ).reoctave_near_pitch(
                         list(prev_pitch_set)[0],
                         position="below",
@@ -86,7 +86,7 @@ class Piano(MIDIInstrument):
                         Note(
                             pitch=pitch,
                             start=time,
-                            duration=roll_config.Duration(1 / 4),
+                            duration=arrangement_metadata.Duration(1 / 4),
                         )
                         for pitch in chord_voicing
                     ]

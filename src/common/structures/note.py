@@ -7,11 +7,11 @@ from common.structures.pitch import Pitch
 @dataclass(frozen=True)
 class Note:
     """
-    The representation for a note in `common.Roll`.
+    The representation for a note in `common.Arrangement`.
 
     :param pitch: The MIDI pitch.
-    :param start: The start time in terms of the associated roll's time.
-    :param duration: The start duration in terms of the associated roll's time.
+    :param start: The start time in terms of the associated arrangement's time.
+    :param duration: The start duration in terms of the associated arrangement's time.
     """
 
     pitch: Pitch

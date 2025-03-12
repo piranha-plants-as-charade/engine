@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from midiutil.MidiFile import MIDIFile  # type: ignore
 
-import common.roll as roll
+import common.arrangement as arrangement
 from common.note_collection import NoteCollection
 from common.audio_data import AudioData
 from common.audio_sample import (
@@ -12,18 +12,18 @@ from common.audio_sample import (
     AudioSampleManagerConfig,
 )
 
-from generation.instruments.base import Instrument, MIDIInstrument, SampledInstrument
+import generation.instruments.base as instruments
 
 
 class Part:
 
     def __init__(
         self,
-        roll: roll.RollConfig,
-        instrument: Instrument,
+        arrangement_metadata: arrangement.ArrangementMetadata,
+        instrument: instruments.Instrument,
         notes: NoteCollection,
     ):
-        self._roll_config = roll
+        self._arrangement_metadata = arrangement_metadata
         self._instrument = instrument
         self._notes = notes
 
@@ -36,14 +36,14 @@ class MIDIPart(Part):
 
     def __init__(
         self,
-        roll_config: roll.RollConfig,
-        instrument: MIDIInstrument,
+        arrangement_metadata: arrangement.ArrangementMetadata,
+        instrument: instruments.MIDIInstrument,
         notes: NoteCollection,
     ):
-        super().__init__(roll_config, instrument, notes)
+        super().__init__(arrangement_metadata, instrument, notes)
 
     def add_notes_to_track(self, midi: MIDIFile, track: int):
-        assert isinstance(self._instrument, MIDIInstrument)
+        assert isinstance(self._instrument, instruments.MIDIInstrument)
 
         time = 0  # start at the beginning
         channel = self._instrument.export_config.channel
@@ -51,17 +51,20 @@ class MIDIPart(Part):
         volume = self._instrument.export_config.volume
 
         midi.addTrackName(track, time, self._instrument.name)  # type: ignore
-        midi.addTempo(track, time, self._roll_config.beats_per_minute)  # type: ignore
+        midi.addTempo(track, time, self._arrangement_metadata.beats_per_minute)  # type: ignore
         midi.addTimeSignature(  # type: ignore
             track,
             time,
-            self._roll_config.beats_per_measure,
-            int(math.sqrt(self._roll_config.beat_duration)),
+            self._arrangement_metadata.beats_per_measure,
+            int(math.sqrt(self._arrangement_metadata.beat_duration)),
             24,
         )
         midi.addProgramChange(track, channel, time, instrument_id)  # type: ignore
 
-        time_scale = self._roll_config.beat_duration / self._roll_config.quantization
+        time_scale = (
+            self._arrangement_metadata.beat_duration
+            / self._arrangement_metadata.quantization
+        )
         for note in self.notes.list():
             midi.addNote(  # type: ignore
                 track,
@@ -77,18 +80,21 @@ class SampledPart(Part):
 
     def __init__(
         self,
-        roll_config: roll.RollConfig,
-        instrument: SampledInstrument,
+        arrangement_metadata: arrangement.ArrangementMetadata,
+        instrument: instruments.SampledInstrument,
         notes: NoteCollection,
     ):
-        super().__init__(roll_config, instrument, notes)
+        super().__init__(arrangement_metadata, instrument, notes)
 
-    def get_audio_data(self, config: roll.RollExportConfig) -> AudioData:
-        assert isinstance(self._instrument, SampledInstrument)
+    def get_audio_data(self, config: arrangement.ArrangementExportConfig) -> AudioData:
+        assert isinstance(self._instrument, instruments.SampledInstrument)
 
         def to_sample_time(time: float) -> int:
-            m = config.sample_rate * 60 / self._roll_config.beats_per_minute
-            m *= self._roll_config.beat_duration / self._roll_config.quantization
+            m = config.sample_rate * 60 / self._arrangement_metadata.beats_per_minute
+            m *= (
+                self._arrangement_metadata.beat_duration
+                / self._arrangement_metadata.quantization
+            )
             return int(m * time)
 
         def get_shift_size(sample: AudioSample) -> int:

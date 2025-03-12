@@ -1,4 +1,4 @@
-from common.roll import RollConfig
+from common.arrangement import ArrangementMetadata
 from common.part import SampledPart
 from common.note_collection import NoteCollection
 
@@ -24,8 +24,8 @@ class Voice(SampledInstrument):
         self,
         melody: NoteCollection,
         chord_progression: ChordProgression,
-        roll_config: RollConfig,
+        arrangement_metadata: ArrangementMetadata,
     ) -> SampledPart:
         notes = NoteCollection()
         notes.add(*melody.list())
-        return SampledPart(roll_config, self, notes)
+        return SampledPart(arrangement_metadata, self, notes)
