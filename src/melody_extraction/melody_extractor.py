@@ -46,6 +46,8 @@ class MelodyExtractor:
         """
         audio = AudioData.from_file(input_path)
 
+        audio = AudioData(librosa.effects.trim(audio.array, top_db=10)[0], audio.sample_rate)  # type: ignore
+
         harmonic_audio, onset_times = self._harmonic_percussive_split(audio)
 
         t, pitch_midi = PitchDetector.detect(harmonic_audio, PitchDetectorConfig())

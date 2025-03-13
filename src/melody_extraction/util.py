@@ -8,4 +8,7 @@ def mode(arr: NDArray[np.float16]) -> NDArray[np.float16] | None:
         return None
     counts = np.bincount(int_arr)
     max_count = np.max(counts)
+    nan_count = arr[np.isnan(arr)].size
+    if nan_count >= max_count:
+        return None
     return np.argwhere(counts == max_count).flatten().astype(np.float16)
