@@ -49,15 +49,21 @@ class MIDIPart(Part):
         channel = self._instrument.export_config.channel
         instrument_id = self._instrument.export_config.instrument_id
         volume = self._instrument.export_config.volume
+        time_signature = (
+            self._arrangement_metadata.beats_per_measure,
+            round(
+                math.log2(self._arrangement_metadata.beat_duration)
+            ),  # expressed as a power of 2
+        )
 
         midi.addTrackName(track, time, self._instrument.name)  # type: ignore
         midi.addTempo(track, time, self._arrangement_metadata.beats_per_minute)  # type: ignore
         midi.addTimeSignature(  # type: ignore
             track,
             time,
-            self._arrangement_metadata.beats_per_measure,
-            int(math.sqrt(self._arrangement_metadata.beat_duration)),
-            24,
+            time_signature[0],
+            time_signature[1],
+            24,  # metronome tick per quarter note
         )
         midi.addProgramChange(track, channel, time, instrument_id)  # type: ignore
 
