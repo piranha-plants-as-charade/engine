@@ -34,9 +34,10 @@ class PitchDetector:
             fmin=librosa.note_to_hz("C3"),  # type: ignore
             fmax=librosa.note_to_hz("G6"),  # type: ignore
             sr=audio.sample_rate,
+            fill_na=np.nan
         )
         t = librosa.times_like(f0, sr=audio.sample_rate)  # type: ignore
-        f0[voiced_probs < 0.5] = np.nan
+        f0[voiced_probs < 0.6] = np.nan
 
         return t, f0
 

@@ -100,11 +100,11 @@ class NoteCollectionBuilder:
         last_pitch_idx = nonnan[-1]
 
         unit_count = 0
-        for unit_start in range(
-            first_pitch_idx, last_pitch_idx, int(self._frames_per_unit)
-        ):
-            self._step(unit_count, unit_start)
+        unit_start = first_pitch_idx
+        while unit_start < last_pitch_idx:
+            self._step(unit_count, int(unit_start))
             unit_count += 1
+            unit_start += self._frames_per_unit
 
         # End the last note.
         if self._note_start is not None:
