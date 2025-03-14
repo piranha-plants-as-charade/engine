@@ -3,7 +3,7 @@ from common.structures.chord import Chord, ChordQuality
 from common.structures.pitch import Pitch
 from common.structures.interval import Interval
 
-from generation.viterbi_index import ViterbiIndex
+from generation.viterbi.viterbi_index import ViterbiIndex
 
 
 class TransitionMatrix:

@@ -1,15 +1,14 @@
 import numpy as np
 
 from common.structures.chord import Chord, ChordQuality
-from common.structures.pitch import Pitch
 from common.arrangement import ArrangementMetadata
 from common.note_collection import NoteCollection
 
 from generation.chord_progression import ChordProgression
-from generation.transition_matrix import TransitionMatrix
-from generation.observation_matrix import ObservationMatrix
+from generation.viterbi.transition_matrix import TransitionMatrix
+from generation.viterbi.observation_matrix import ObservationMatrix
 from generation.chord_progression_generator import ChordProgressionGenerator
-from generation.viterbi_index import ViterbiIndex
+from generation.viterbi.viterbi_index import ViterbiIndex
 
 
 class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
@@ -29,12 +28,12 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
         self, arrangement_metadata: ArrangementMetadata, melody: NoteCollection
     ):
         self._priors = np.zeros((12 * len(ChordQuality)))
-        # End on C major
+        # End on tonic major
         # TODO: Determine key of melody.
         self._priors[
-            ViterbiIndex.from_chord(Chord(Pitch.from_str("C"), ChordQuality.Maj)).index
+            ViterbiIndex.from_chord(Chord(arrangement_metadata.key, ChordQuality.Maj)).index
         ] = 1
-        self._transition_matrix = TransitionMatrix().matrix
+        self._transition_matrix = TransitionMatrix(arrangement_metadata.key).matrix
         self._observation_matrix = ObservationMatrix().matrix
 
         self._melody = melody

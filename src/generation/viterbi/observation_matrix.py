@@ -1,7 +1,7 @@
 import numpy as np
 from common.structures.chord import ChordQuality
 
-from generation.viterbi_index import ViterbiIndex
+from generation.viterbi.viterbi_index import ViterbiIndex
 
 class ObservationMatrix():
     """
@@ -21,8 +21,8 @@ class ObservationMatrix():
         
         for i in range(N):
             chord = ViterbiIndex(i).to_chord()
-            for interval in chord.quality.value.intervals:
-                self._matrix[i, (chord.root + interval).value % 12] += 10
+            for pitch in chord.get_pitches():
+                self._matrix[i, pitch.value % 12] += 10
         
         for r in range(N):
             self._matrix[r, :] /= np.sum(self._matrix[r, :])
