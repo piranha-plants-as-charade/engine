@@ -80,25 +80,3 @@ class Chord:
 
     def get_V7(self) -> "Chord":
         return Chord(self.root + Interval.from_str("5"), ChordQuality.Dom7)
-
-    def to_index(self) -> int:
-        """
-        Returns the Viterbi index of the chord.
-
-        :return: The Viterbi index.
-        """
-        return self.root.to_index() * len(ChordQuality) + list(ChordQuality).index(
-            self.quality
-        )
-
-    @classmethod
-    def from_index(cls, index: int) -> "Chord":
-        """
-        Returns a chord from its Viterbi index.
-
-        :param index: The Viterbi index.
-        :return: The chord.
-        """
-        root = index // len(ChordQuality)
-        quality = list(ChordQuality)[index % len(ChordQuality)]
-        return Chord(Pitch(root), quality)

@@ -9,6 +9,7 @@ from generation.chord_progression import ChordProgression
 from generation.transition_matrix import TransitionMatrix
 from generation.observation_matrix import ObservationMatrix
 from generation.chord_progression_generator import ChordProgressionGenerator
+from generation.viterbi_index import ViterbiIndex
 
 
 class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
@@ -30,7 +31,9 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
         self._priors = np.zeros((12 * len(ChordQuality)))
         # End on C major
         # TODO: Determine key of melody.
-        self._priors[Chord(Pitch.from_str("C"), ChordQuality.Maj).to_index()] = 1
+        self._priors[
+            ViterbiIndex.from_chord(Chord(Pitch.from_str("C"), ChordQuality.Maj)).index
+        ] = 1
         self._transition_matrix = TransitionMatrix().matrix
         self._observation_matrix = ObservationMatrix().matrix
 
@@ -64,7 +67,7 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
         if len(last_note) == 0:
             last_note = self._melody.get_pitches_at_time(end - 2 * hop_size)
         (cur_note,) = last_note
-        probs[:, 0] = self._priors * self._observation_matrix[:, cur_note.to_index()]
+        probs[:, 0] = self._priors * self._observation_matrix[:, cur_note.value % 12]
 
         t = 1
         for time in reversed(range(0, melody_end - hop_size, hop_size)):
@@ -73,7 +76,7 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
             for i in range(N):
                 probs[i, t] = (
                     np.max(probs[:, t - 1] * self._transition_matrix[:, i])
-                    * self._observation_matrix[i, cur_note.to_index()]
+                    * self._observation_matrix[i, cur_note.value % 12]
                 )
                 parent[i, t] = np.argmax(
                     probs[:, t - 1] * self._transition_matrix[:, i]
@@ -90,7 +93,7 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
         # Build chord progression.
         i = 0
         for t in reversed(range(T)):
-            chord = Chord.from_index(path[t])
+            chord = ViterbiIndex(path[t]).to_chord()
             chord_progression.add_chords((chord, i * hop_size))
             i += 1
 

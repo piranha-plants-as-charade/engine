@@ -3,6 +3,8 @@ from common.structures.chord import Chord, ChordQuality
 from common.structures.pitch import Pitch
 from common.structures.interval import Interval
 
+from generation.viterbi_index import ViterbiIndex
+
 
 class TransitionMatrix:
     """
@@ -31,16 +33,20 @@ class TransitionMatrix:
         N = 12 * len(ChordQuality)
         self._matrix = np.zeros((N, N)) / 100
 
-        I_chord = Chord(key, ChordQuality.Maj).to_index()
-        IV_chord = Chord(key + Interval.from_str("4"), ChordQuality.Maj).to_index()
-        V_chord = Chord(key + Interval.from_str("5"), ChordQuality.Maj).to_index()
+        I_chord = ViterbiIndex.from_chord(Chord(key, ChordQuality.Maj)).index
+        IV_chord = ViterbiIndex.from_chord(
+            Chord(key + Interval.from_str("4"), ChordQuality.Maj)
+        ).index
+        V_chord = ViterbiIndex.from_chord(
+            Chord(key + Interval.from_str("5"), ChordQuality.Maj)
+        ).index
 
         self._matrix[:, [I_chord, IV_chord, V_chord]] = 1
 
         for c in range(12 * len(ChordQuality)):
-            chord = Chord.from_index(c)
+            chord = ViterbiIndex(c).to_chord()
             if chord.quality != ChordQuality.Dom7:
-                v7 = chord.get_V7().to_index()
+                v7 = ViterbiIndex.from_chord(chord.get_V7()).index
                 self._matrix[c, v7] = 2
 
         for r in range(N):
