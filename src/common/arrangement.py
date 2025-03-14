@@ -10,6 +10,7 @@ from midiutil.MidiFile import MIDIFile  # type: ignore
 from common.util import db_to_strength
 import common.part as part
 from common.audio_data import AudioData
+from common.structures.pitch import Pitch
 
 
 @dataclass(frozen=True)
@@ -18,10 +19,12 @@ class ArrangementMetadata:
     :param beats_per_minute: The beats per minute in terms of the time signature beat.
     :param quantization: The minimum unit of time (e.g. quantization = 16 means quantize by 16th notes)
     :param time_signature: The time signature of the song.
+    :param key: The key of the song. Assumed to be major.
     """
 
     beats_per_minute: int
     time_signature: Tuple[int, int]
+    key: Pitch = Pitch.from_str("C")
     quantization: int = 16
 
     @property
