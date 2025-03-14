@@ -1,6 +1,7 @@
 import numpy as np
 
 from common.structures.chord import Chord, ChordQuality
+from common.structures.pitch import Pitch
 from common.arrangement import ArrangementMetadata
 from common.note_collection import NoteCollection
 
@@ -29,7 +30,7 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
         self._priors = np.zeros((12 * len(ChordQuality)))
         # End on C major
         # TODO: Determine key of melody.
-        self._priors[Chord.from_str("C").to_index()] = 1
+        self._priors[Chord(Pitch.from_str("C"), ChordQuality.Maj).to_index()] = 1
         self._transition_matrix = TransitionMatrix().matrix
         self._observation_matrix = ObservationMatrix().matrix
 
@@ -59,11 +60,15 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
         parent = np.zeros((N, T))
 
         # Initialize with priors and first observation.
-        (cur_note,) = self._melody.get_pitches_at_time(end - hop_size)
+        last_note = self._melody.get_pitches_at_time(end - hop_size)
+        if len(last_note) == 0:
+            last_note = self._melody.get_pitches_at_time(end - 2 * hop_size)
+        (cur_note,) = last_note
         probs[:, 0] = self._priors * self._observation_matrix[:, cur_note.to_index()]
 
         t = 1
         for time in reversed(range(0, melody_end - hop_size, hop_size)):
+            # TODO: handle case where there is no note exactly at this time.
             (cur_note,) = self._melody.get_pitches_at_time(time)
             for i in range(N):
                 probs[i, t] = (
@@ -84,7 +89,7 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
 
         # Build chord progression.
         i = 0
-        for t in reversed(range(T - 1)):
+        for t in reversed(range(T)):
             chord = Chord.from_index(path[t])
             chord_progression.add_chords((chord, i * hop_size))
             i += 1
