@@ -36,6 +36,16 @@ class ChordQuality(Enum):
         )
     )
 
+    @classmethod
+    def from_str(cls, s: str) -> "ChordQuality":
+        if s in ["", "+"]:
+            return cls.Maj
+        if s in ["m", "-"]:
+            return cls.Min
+        if s in ["7"]:
+            return cls.Dom7
+        raise ValueError(f"Invalid chord quality: {s}")
+
 
 @dataclass(frozen=True)
 class Chord:
@@ -68,5 +78,46 @@ class Chord:
             ]
         )
 
-    def get_V7(self):
+    def get_V7(self) -> "Chord":
         return Chord(self.root + Interval.from_str("5"), ChordQuality.Dom7)
+    
+    def to_index(self) -> int:
+        """
+        Returns the Viterbi index of the chord.
+
+        :return: The Viterbi index.
+        """
+        return self.root.value % 12 * len(ChordQuality) + list(ChordQuality).index(self.quality)
+    
+    @classmethod
+    def from_index(cls, index: int) -> "Chord":
+        """
+        Returns a chord from its Viterbi index.
+
+        :param index: The Viterbi index.
+        :return: The chord.
+        """
+        root = index // 3
+        quality = list(ChordQuality)[index % 3]
+        return Chord(Pitch(root), quality)
+
+    @classmethod
+    def from_str(cls, s: str) -> "Chord":
+        """
+        Constructs a chord from a string representation.
+
+        Examples: "C", "Gm", "F#7"
+
+        :param s: The string representation.
+        :return: The chord.
+        """
+        split = 1
+        if len(s) > 1 and s[1] in ['b', '#']:
+            split = 2
+
+        return Chord(Pitch.from_str(s[:split]), ChordQuality.from_str(s[split:]))
+    
+    def __str__(self) -> str:
+        root = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][self.root.value % 12]
+        quality = ['Maj', 'Min', 'Dom7'][list(ChordQuality).index(self.quality)]
+        return f"{root}{quality}"

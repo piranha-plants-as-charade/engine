@@ -54,3 +54,6 @@ class Pitch:
             else candidates["above"]
         )
         return Pitch(candidates[position], chord_degree=self.chord_degree)
+    
+    def to_index(self) -> int:
+        return self.value % 12
