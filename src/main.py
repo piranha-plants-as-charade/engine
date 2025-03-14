@@ -5,7 +5,7 @@ from env import ENV
 from common.arrangement import ArrangementExportConfig, ArrangementMetadata
 from common.arrangement_generator import ArrangementGenerator
 
-from melody_extraction.melody_extractor import MelodyExtractor
+from melody_extraction.signal import SignalMelodyExtractor
 
 from generation.chord_progression_generator import ChordProgressionGenerator
 from generation.instruments.voice import Voice
@@ -26,7 +26,7 @@ async def generate(input_path: str) -> str:
         quantization=16,
     )
 
-    melody_extractor = MelodyExtractor()
+    melody_extractor = SignalMelodyExtractor()
     melody = melody_extractor.extract_melody(arrangement_metadata, input_path)
 
     chord_progression_generator = ChordProgressionGenerator(
