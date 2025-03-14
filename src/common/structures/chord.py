@@ -38,7 +38,7 @@ class ChordQuality(Enum):
 
     @classmethod
     def from_str(cls, s: str) -> "ChordQuality":
-        if s in ["", "+"]:
+        if s in ["", "^"]:
             return cls.Maj
         if s in ["m", "-"]:
             return cls.Min
@@ -87,7 +87,7 @@ class Chord:
 
         :return: The Viterbi index.
         """
-        return self.root.value % 12 * len(ChordQuality) + list(ChordQuality).index(self.quality)
+        return self.root.to_index() * len(ChordQuality) + list(ChordQuality).index(self.quality)
     
     @classmethod
     def from_index(cls, index: int) -> "Chord":
@@ -97,8 +97,8 @@ class Chord:
         :param index: The Viterbi index.
         :return: The chord.
         """
-        root = index // 3
-        quality = list(ChordQuality)[index % 3]
+        root = index // len(ChordQuality)
+        quality = list(ChordQuality)[index % len(ChordQuality)]
         return Chord(Pitch(root), quality)
 
     @classmethod
@@ -111,13 +111,11 @@ class Chord:
         :param s: The string representation.
         :return: The chord.
         """
-        split = 1
-        if len(s) > 1 and s[1] in ['b', '#']:
-            split = 2
+        split = len(s) if s[-1] in "ABCDEFGb#" else -1
 
         return Chord(Pitch.from_str(s[:split]), ChordQuality.from_str(s[split:]))
     
     def __str__(self) -> str:
-        root = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][self.root.value % 12]
+        root = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][self.root.to_index()]
         quality = ['Maj', 'Min', 'Dom7'][list(ChordQuality).index(self.quality)]
         return f"{root}{quality}"

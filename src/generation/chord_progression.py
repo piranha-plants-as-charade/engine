@@ -52,9 +52,9 @@ class ChordProgression:
         """
         for chord, time in chords:
             # time must be in chord progression time range
-            if not self.start_time <= time < self.end_time:
-                print(f"{self.start_time=} {time=} {self.end_time=}")
-            assert self.start_time <= time < self.end_time
+            assert (
+                self.start_time <= time < self.end_time
+            ), f"Chord time {time} is not in chord progression time range [{self.start_time}, {self.end_time})"
             self._chords[time] = chord
         self._clear_chords_cache()
 
