@@ -1,16 +1,27 @@
 import os
+import typing
 import dataclasses
-from typing import Dict, Type, Any
+from typing import Dict, Type, Literal, Tuple, Any
+from dataclasses import dataclass
 from dotenv import dotenv_values
 
 
-@dataclasses.dataclass(frozen=True)
+RunMode = Literal["prod", "dev"]
+
+
+_RUN_MODE_ARGS: Tuple[RunMode, ...] = typing.get_args(RunMode)
+_RUN_MODE = os.environ.get("MODE", "dev")
+assert _RUN_MODE in _RUN_MODE_ARGS, "Invalid run mode."
+
+
+@dataclass(frozen=True)
 class Env:
     BE_AUTH_TOKEN: str
     FE_BASE_URL: str
     BE_BASE_URL: str
     INPUT_DIR: str
     OUTPUT_DIR: str
+    RUN_MODE: RunMode = _RUN_MODE
 
 
 def load_env(cls: Type[Any], path: str) -> Any:

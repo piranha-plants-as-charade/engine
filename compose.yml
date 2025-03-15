@@ -1,0 +1,8 @@
+services:
+  web:
+    environment:
+      - MODE=prod
+      - NUMBA_CACHE_DIR=/tmp/numba_cache_dir/ # changed to writeable directory (used by librosa)
+    build: .
+    ports:
+      - "8000:8000"
