@@ -68,5 +68,5 @@ class Chord:
             ]
         )
 
-    def get_V7(self):
+    def get_V7(self) -> "Chord":
         return Chord(self.root + Interval.from_str("5"), ChordQuality.Dom7)
