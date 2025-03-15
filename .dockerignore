@@ -3,6 +3,8 @@
 !/data/
 !/src/
 
+!**/.env.*
+
 !.dockerignore
 !compose.yml
 !Dockerfile
