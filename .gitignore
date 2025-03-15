@@ -1,10 +1,10 @@
-__pycache__/
-.DS_Store
+**/__pycache__/
+**/.DS_Store
 
-.env
+**/.env
 
-playground/output/
-data/soundfonts/*
+/playground/output/
+/data/soundfonts/*
 
-input/
-output/
+/input/
+/output/
