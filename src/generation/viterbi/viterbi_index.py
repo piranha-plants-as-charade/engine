@@ -10,9 +10,6 @@ class ViterbiIndex:
     TOTAL_STATES: ClassVar[int] = 12 * len(ChordQuality)
     index: int = -1
 
-    def __init__(self, index: int):
-        self.index = index
-
     @classmethod
     def from_chord(cls, chord: Chord) -> "ViterbiIndex":
         return cls(
