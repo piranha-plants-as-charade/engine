@@ -20,7 +20,7 @@ poetry shell    # activates the Poetry environment
 poetry install  # installs the Python dependencies
 ```
 
-Create `src/.env`. Below is an example environment file for development purposes:
+Create `/.env.dev` and `/.env.prod`. Below is an example environment file:
 
 ```env
 BE_AUTH_TOKEN=<TOKEN>

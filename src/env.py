@@ -36,7 +36,7 @@ def load_env(cls: Type[Any], path: str) -> Any:
     return cls(**settings)
 
 
-ENV: Env = load_env(Env, ".env")
+ENV: Env = load_env(Env, f"../.env.{_RUN_MODE.lower()}")
 
 os.makedirs(ENV.INPUT_DIR, exist_ok=True)
 os.makedirs(ENV.OUTPUT_DIR, exist_ok=True)
