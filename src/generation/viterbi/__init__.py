@@ -91,9 +91,11 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
 
         # Build chord progression.
         i = 0
+        prev_chord = -1
         for t in reversed(range(T)):
-            chord = ViterbiIndex(path[t]).to_chord()
-            chord_progression.add_chords((chord, i * hop_size))
+            if path[t] != prev_chord:
+                chord_progression.add_chords((ViterbiIndex(path[t]).to_chord(), i * hop_size))
             i += 1
+            prev_chord = path[t]
 
         return chord_progression
