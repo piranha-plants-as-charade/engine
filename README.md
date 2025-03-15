@@ -8,8 +8,8 @@ The premise of this project is to transform an input melody into a full-fledged 
 
 - [Python 3.11](https://www.python.org/downloads/)
 - [Poetry](https://python-poetry.org/docs/#installation)
+- [Docker](https://docs.docker.com/get-started/get-docker/)
 - [FluidSynth](https://github.com/FluidSynth/fluidsynth/wiki/Download)
-- [FFmpeg](https://ffmpeg.org/download.html)
 
 ### Installation
 
@@ -39,6 +39,13 @@ fastapi dev app.py
 ```
 
 This will open a server at `localhost:8000`.
+
+## Production
+
+Run the following command to build the app in Docker:
+```sh
+docker compose up
+```
 
 ## Endpoints
 
