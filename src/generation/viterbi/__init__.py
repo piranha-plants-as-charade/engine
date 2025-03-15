@@ -27,11 +27,13 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
     def __init__(
         self, arrangement_metadata: ArrangementMetadata, melody: NoteCollection
     ):
-        self._priors = np.zeros((12 * len(ChordQuality)))
+        self._priors = np.zeros((ViterbiIndex.TOTAL_STATES))
         # End on tonic major
         # TODO: Determine key of melody.
         self._priors[
-            ViterbiIndex.from_chord(Chord(arrangement_metadata.key, ChordQuality.Maj)).index
+            ViterbiIndex.from_chord(
+                Chord(arrangement_metadata.key, ChordQuality.Maj)
+            ).index
         ] = 1
         self._transition_matrix = TransitionMatrix(arrangement_metadata.key).matrix
         self._observation_matrix = ObservationMatrix().matrix
@@ -94,7 +96,9 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
         prev_chord = -1
         for t in reversed(range(T)):
             if path[t] != prev_chord:
-                chord_progression.add_chords((ViterbiIndex(path[t]).to_chord(), i * hop_size))
+                chord_progression.add_chords(
+                    (ViterbiIndex(path[t]).to_chord(), i * hop_size)
+                )
             i += 1
             prev_chord = path[t]
 

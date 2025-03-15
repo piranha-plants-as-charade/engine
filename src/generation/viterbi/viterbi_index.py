@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import ClassVar
 
 from common.structures.chord import Chord, ChordQuality
 from common.structures.pitch import Pitch
@@ -6,7 +7,8 @@ from common.structures.pitch import Pitch
 
 @dataclass
 class ViterbiIndex:
-    index = -1
+    TOTAL_STATES: ClassVar[int] = 12 * len(ChordQuality)
+    index: int = -1
 
     def __init__(self, index: int):
         self.index = index

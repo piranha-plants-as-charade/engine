@@ -30,8 +30,9 @@ class TransitionMatrix:
     """
 
     def __init__(self, key: Pitch = Pitch.from_str("C")):
-        N = 12 * len(ChordQuality)
-        self._matrix = np.zeros((N, N)) / 100
+        self._matrix = (
+            np.zeros((ViterbiIndex.TOTAL_STATES, ViterbiIndex.TOTAL_STATES)) / 100
+        )
 
         I_chord = ViterbiIndex.from_chord(Chord(key, ChordQuality.Maj)).index
         IV_chord = ViterbiIndex.from_chord(
@@ -43,13 +44,13 @@ class TransitionMatrix:
 
         self._matrix[:, [I_chord, IV_chord, V_chord]] = 1
 
-        for c in range(12 * len(ChordQuality)):
+        for c in range(ViterbiIndex.TOTAL_STATES):
             chord = ViterbiIndex(c).to_chord()
             if chord.quality != ChordQuality.Dom7:
                 v7 = ViterbiIndex.from_chord(chord.get_V7()).index
                 self._matrix[c, v7] = 2
 
-        for r in range(N):
+        for r in range(ViterbiIndex.TOTAL_STATES):
             self._matrix[r, :] /= np.sum(self._matrix[r, :])
 
     @property
