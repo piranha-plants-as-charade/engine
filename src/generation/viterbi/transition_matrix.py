@@ -48,7 +48,13 @@ class TransitionMatrix:
             chord = ViterbiIndex(c).to_chord()
             if chord.quality != ChordQuality.Dom7:
                 v7 = ViterbiIndex.from_chord(chord.get_V7()).index
-                self._matrix[c, v7] = 2
+                self._matrix[c, v7] = 1.2
+            else:
+                self._matrix[c, c] = 1
+        
+        # Encourage diagonals.
+        for i in range(ViterbiIndex.TOTAL_STATES):
+            self._matrix[i, i] *= 1.5
 
         for r in range(ViterbiIndex.TOTAL_STATES):
             self._matrix[r, :] /= np.sum(self._matrix[r, :])

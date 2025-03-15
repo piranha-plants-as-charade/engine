@@ -11,6 +11,27 @@ from generation.chord_progression_generator import ChordProgressionGenerator
 from generation.viterbi.viterbi_index import ViterbiIndex
 
 
+def f(i: int, notes: NoteCollection, start: int, hop: int) -> float:
+    chord = ViterbiIndex(i).to_chord()
+    pitches = [x.value % 12 for x in chord.get_pitches()]
+    score = 0
+    note_found = False
+    for index in range(start, start + hop):
+        for note in notes.get_pitches_at_time(index):
+            note_found = True
+            if note.value % 12 in pitches:
+                score += 1
+
+    # Return constant non-zero score if no notes are found.
+    if not note_found:
+        return 1
+
+    return score / hop
+
+
+f_vectorized = np.vectorize(f, excluded=["notes", "start", "hop"])
+
+
 class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
     """
     A chord progression generator using the Vitberi algorithm.
@@ -53,32 +74,29 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
         )
         hop_size = round(measure_duration / 2)
 
-        # Total number of states (chords).
-        N = len(self._transition_matrix)
         # Total number of observations (melody chunks).
         T = int(np.ceil(chord_progression.end_time / hop_size))
 
         # DP table for path probabilities.
-        probs = np.ones((N, T))
+        probs = np.ones((ViterbiIndex.TOTAL_STATES, T))
         # DP table for backtracking (points to previous state).
-        parent = np.zeros((N, T))
+        parent = np.zeros((ViterbiIndex.TOTAL_STATES, T))
 
         # Initialize with priors and first observation.
-        last_note = self._melody.get_pitches_at_time(end - hop_size)
-        if len(last_note) == 0:
-            last_note = self._melody.get_pitches_at_time(end - 2 * hop_size)
-        (cur_note,) = last_note
-        probs[:, 0] = self._priors * self._observation_matrix[:, cur_note.value % 12]
+        probs[:, 0] = self._priors * f_vectorized(
+            np.arange(ViterbiIndex.TOTAL_STATES),
+            notes=self._melody,
+            start=0,
+            hop=hop_size,
+        )
 
         t = 1
         for time in reversed(range(0, melody_end - hop_size, hop_size)):
             # TODO: handle case where there is no note exactly at this time.
-            (cur_note,) = self._melody.get_pitches_at_time(time)
-            for i in range(N):
-                probs[i, t] = (
-                    np.max(probs[:, t - 1] * self._transition_matrix[:, i])
-                    * self._observation_matrix[i, cur_note.value % 12]
-                )
+            for i in range(ViterbiIndex.TOTAL_STATES):
+                probs[i, t] = np.max(
+                    probs[:, t - 1] * self._transition_matrix[:, i]
+                ) * f(i, self._melody, time, hop_size)
                 parent[i, t] = np.argmax(
                     probs[:, t - 1] * self._transition_matrix[:, i]
                 )

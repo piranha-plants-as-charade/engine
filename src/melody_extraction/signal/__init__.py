@@ -33,7 +33,15 @@ class SignalMelodyExtractor:
 
         harmonic_signal = librosa.istft(harmonic)  # type: ignore
         onset_env = librosa.onset.onset_strength(S=np.abs(percussive), aggregate=np.median, sr=audio.sample_rate)  # type: ignore
-        onset_times = librosa.onset.onset_detect(onset_envelope=onset_env, sr=audio.sample_rate)  # type: ignore
+        onset_times = librosa.onset.onset_detect(  # type: ignore
+            onset_envelope=onset_env,
+            sr=audio.sample_rate,
+            delta=0.2,
+            pre_max=10,
+            post_max=10,
+            pre_avg=50,
+            post_avg=50,
+        )
 
         return AudioData(harmonic_signal, audio.sample_rate), onset_times
 
