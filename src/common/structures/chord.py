@@ -36,16 +36,6 @@ class ChordQuality(Enum):
         )
     )
 
-    @classmethod
-    def from_str(cls, s: str) -> "ChordQuality":
-        if s in ["", "^"]:
-            return cls.Maj
-        if s in ["m", "-"]:
-            return cls.Min
-        if s in ["7"]:
-            return cls.Dom7
-        raise ValueError(f"Invalid chord quality: {s}")
-
 
 @dataclass(frozen=True)
 class Chord:
