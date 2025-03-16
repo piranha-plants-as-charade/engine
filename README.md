@@ -8,8 +8,8 @@ The premise of this project is to transform an input melody into a full-fledged 
 
 - [Python 3.11](https://www.python.org/downloads/)
 - [Poetry](https://python-poetry.org/docs/#installation)
+- [Docker](https://docs.docker.com/get-started/get-docker/)
 - [FluidSynth](https://github.com/FluidSynth/fluidsynth/wiki/Download)
-- [FFmpeg](https://ffmpeg.org/download.html)
 
 ### Installation
 
@@ -20,7 +20,7 @@ poetry shell    # activates the Poetry environment
 poetry install  # installs the Python dependencies
 ```
 
-Create `src/.env`. Below is an example environment file for development purposes:
+Create `/.env.dev` and `/.env.prod`. Below is an example environment file:
 
 ```env
 BE_AUTH_TOKEN=<TOKEN>
@@ -39,6 +39,13 @@ fastapi dev app.py
 ```
 
 This will open a server at `localhost:8000`.
+
+## Production
+
+Run the following command to build the app in Docker:
+```sh
+docker build -t USER_NAME/IMAGE_NAME --platform linux/amd64 .
+```
 
 ## Endpoints
 

@@ -3,15 +3,27 @@ import uuid
 from typing import Annotated
 from fastapi import FastAPI, UploadFile, File, Header, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import Response, FileResponse
 
 from common.util import is_wav_media_type
 
 import main
+from logger import LOGGER
 from env import ENV
 
 
-app = FastAPI()
+_DESCRIPTION = """
+**Links**: [GitHub repository](https://github.com/max-y-huang/piranha-plants-as-charade), [demo page]()
+"""
+
+
+app = FastAPI(
+    title="Piranha Plants as Charade",
+    summary="Music generation in the style of [_Piranha Plants on Parade_](https://www.youtube.com/watch?v=3EkzTUPoWMU).",
+    description=_DESCRIPTION,
+    docs_url=None,
+    redoc_url="/",
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[ENV.FE_BASE_URL],
@@ -59,6 +71,7 @@ async def generate(
         ),
     ],
 ) -> Response:
+    LOGGER.info("Requested /generate.")
 
     if not authorize(authorization):
         return Response(
@@ -68,6 +81,9 @@ async def generate(
     # TODO: validate file.
 
     upload_path = os.path.join(ENV.INPUT_DIR, generate_unique_file_name(file))
+    upload_id = os.path.splitext(os.path.basename(upload_path))[0]
+
+    LOGGER.info(f"Handling input with ID {upload_id}")
 
     # Save file to disk.
     with open(upload_path, "wb") as fout:

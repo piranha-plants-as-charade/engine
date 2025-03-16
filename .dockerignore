@@ -1,0 +1,16 @@
+*
+
+!/data/
+!/src/
+
+!**/.env.*
+
+!.dockerignore
+!compose.yml
+!Dockerfile
+
+!poetry.lock
+!pyproject.toml
+
+**/__pycache__/
+**/.DS_Store
