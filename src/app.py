@@ -1,11 +1,9 @@
 import os
 import uuid
-import dataclasses
-from dataclasses import dataclass
 from typing import Annotated
 from fastapi import FastAPI, UploadFile, File, Header, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response, FileResponse, JSONResponse
+from fastapi.responses import Response, FileResponse
 
 from common.util import is_wav_media_type
 
@@ -14,21 +12,24 @@ from logger import LOGGER
 from env import ENV
 
 
-app = FastAPI()
+_DESCRIPTION = """
+**Links**: [GitHub repository](https://github.com/max-y-huang/piranha-plants-as-charade), [demo page]()
+"""
+
+
+app = FastAPI(
+    title="Piranha Plants as Charade",
+    summary="Music generation in the style of [_Piranha Plants on Parade_](https://www.youtube.com/watch?v=3EkzTUPoWMU).",
+    description=_DESCRIPTION,
+    docs_url=None,
+    redoc_url="/",
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[ENV.FE_BASE_URL],
     allow_methods=["GET", "POST"],
     allow_headers=["Authorization"],
 )
-
-
-@dataclass
-class HealthResponse:
-    status: str = "healthy"
-
-    def as_dict(self):
-        return dataclasses.asdict(self)
 
 
 def authorize(token: str) -> bool:
@@ -41,11 +42,6 @@ def generate_unique_file_name(file: UploadFile) -> str:
     if file.filename is not None:
         ext = os.path.splitext(file.filename)[1]
     return name + ext
-
-
-@app.get("/healthz", responses={status.HTTP_200_OK: {"model": HealthResponse}})
-def healthz():
-    return JSONResponse(content=HealthResponse().as_dict())
 
 
 @app.post(

@@ -3,6 +3,8 @@
 
 **/.env.*
 
+/deploy_to_gcloud/*.compiled.yaml
+
 /playground/output/
 /data/soundfonts/*
 
