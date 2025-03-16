@@ -1,5 +1,7 @@
 FROM ubuntu:latest
 ENV \
+  MODE="prod" \
+  NUMBA_CACHE_DIR="/tmp/numba_cache_dir/" \
   # Poetry configuration.
   POETRY_NO_INTERACTION=1 \
   POETRY_VIRTUALENVS_CREATE=true \

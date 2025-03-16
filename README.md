@@ -44,7 +44,7 @@ This will open a server at `localhost:8000`.
 
 Run the following command to build the app in Docker:
 ```sh
-docker compose up
+docker build -t USER_NAME/IMAGE_NAME --platform linux/amd64 .
 ```
 
 ## Endpoints
