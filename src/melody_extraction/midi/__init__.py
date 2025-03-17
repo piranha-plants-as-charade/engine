@@ -25,29 +25,43 @@ def extract_arrangement_metadata_from_melody(input_path: str) -> ArrangementMeta
         assert type(key) is str
         return Pitch.from_str(key)
 
-    time_signatures: Set[Tuple[int, int]] = set()
-    keys: Set[Pitch] = set()
+    def extract_beats_per_minute(message: mido.MetaMessage) -> int:
+        # Throws error on fail.
+        assert getattr(message, "type") == "set_tempo"
+        microseconds_per_beat = getattr(message, "tempo")
+        seconds_per_beat = microseconds_per_beat / 1e6
+        beats_per_minute = round(60 / seconds_per_beat)
+        return beats_per_minute
+
+    time_signature_set: Set[Tuple[int, int]] = set()
+    key_set: Set[Pitch] = set()
+    beats_per_minute_set: Set[int] = set()
 
     file = mido.MidiFile(input_path)
     for message in file.merged_track:  # type: ignore
         if isinstance(message, mido.MetaMessage):
             match getattr(message, "type"):
                 case "time_signature":
-                    time_signatures.add(extract_time_signature(message))
+                    time_signature_set.add(extract_time_signature(message))
                 case "key_signature":
                     # Assuming all keys are in major.
-                    keys.add(extract_key_signature(message))
+                    key_set.add(extract_key_signature(message))
+                case "set_tempo":
+                    beats_per_minute_set.add(extract_beats_per_minute(message))
                 case _:
-                    pass
+                    print(message)
 
-    assert len(time_signatures) == 1
-    time_signature = list(time_signatures)[0]
+    assert len(time_signature_set) == 1
+    time_signature = list(time_signature_set)[0]
 
-    assert len(keys) == 1
-    key = list(keys)[0]
+    assert len(key_set) == 1
+    key = list(key_set)[0]
+
+    assert len(beats_per_minute_set) == 1
+    beats_per_minute = list(beats_per_minute_set)[0]
 
     return ArrangementMetadata(
-        beats_per_minute=110,
+        beats_per_minute=beats_per_minute,
         time_signature=time_signature,
         key=key,
         quantization=16,
