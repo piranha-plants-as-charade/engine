@@ -6,30 +6,9 @@ from common.note_collection import NoteCollection
 
 from generation.chord_progression import ChordProgression
 from generation.viterbi.transition_matrix import TransitionMatrix
-from generation.viterbi.observation_matrix import ObservationMatrix
+from generation.viterbi.observation_function import ObservationFunction
 from generation.chord_progression_generator import ChordProgressionGenerator
 from generation.viterbi.viterbi_index import ViterbiIndex
-
-
-def f(i: int, notes: NoteCollection, start: int, hop: int) -> float:
-    chord = ViterbiIndex(i).to_chord()
-    pitches = [x.value % 12 for x in chord.get_pitches()]
-    score = 0
-    note_found = False
-    for index in range(start, start + hop):
-        for note in notes.get_pitches_at_time(index):
-            note_found = True
-            if note.value % 12 in pitches:
-                score += 1
-
-    # Return constant non-zero score if no notes are found.
-    if not note_found:
-        return 1
-
-    return score / hop
-
-
-f_vectorized = np.vectorize(f, excluded=["notes", "start", "hop"])
 
 
 class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
@@ -57,7 +36,7 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
             ).index
         ] = 1
         self._transition_matrix = TransitionMatrix(arrangement_metadata.key).matrix
-        self._observation_matrix = ObservationMatrix().matrix
+        self._observation_fn = ObservationFunction()
 
         self._melody = melody
         self._arrangement_metadata = arrangement_metadata
@@ -83,11 +62,11 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
         parent = np.zeros((ViterbiIndex.TOTAL_STATES, T))
 
         # Initialize with priors and first observation.
-        probs[:, 0] = self._priors * f_vectorized(
+        probs[:, 0] = self._priors * self._observation_fn.get_prob(
             np.arange(ViterbiIndex.TOTAL_STATES),
             notes=self._melody,
             start=0,
-            hop=hop_size,
+            hop_size=hop_size,
         )
 
         t = 1
@@ -96,7 +75,7 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
             for i in range(ViterbiIndex.TOTAL_STATES):
                 probs[i, t] = np.max(
                     probs[:, t - 1] * self._transition_matrix[:, i]
-                ) * f(i, self._melody, time, hop_size)
+                ) * self._observation_fn.get_prob(i, self._melody, time, hop_size)
                 parent[i, t] = np.argmax(
                     probs[:, t - 1] * self._transition_matrix[:, i]
                 )
