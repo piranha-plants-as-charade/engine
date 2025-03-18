@@ -16,9 +16,9 @@ ObservationScoreFnVectorized = Callable[
 class ObservationFunction:
     """
     A function format of the observation matrix for the Viterbi chord progression generator.
-    This function represents the probability of observing a particular pitch given a chord.
+    This function represents the probabiscorelity of observing a particular pitch given a chord.
 
-    :param algorithm: The algorithm to use for calculating the probability. By default, this
+    :param algorithm: The algorithm to use for calculating the score. By default, this
         is the frequency counter algorithm.
     """
 
@@ -38,21 +38,20 @@ class ObservationFunction:
     def frequency_counter(cls, i: int, pitches: Tuple[FrozenSet[Pitch], ...]) -> float:
         """
         A simple observation function that counts the number of notes in a chord that are present in
-        the given pitches.
+        the given pitches and scales by the number of notes in the chord.
 
         :param i: The index of the chord.
         :param pitches: The pitches to compare against the chord.
-        :param hop_size: The size of the hop in the algorithm.
         """
         chord = ViterbiIndex(i).to_chord()
         chord_pitches = [x.value % 12 for x in chord.get_pitches()]
         note_found = False
-        score = 0.1
+        score = 0.0
         for timestep in pitches:
             for pitch in timestep:
                 note_found = True
                 if pitch.value % 12 in chord_pitches:
-                    score += 1
+                    score += 1 / len(chord_pitches)
 
         # Return constant non-zero score if no notes are found.
         if not note_found:

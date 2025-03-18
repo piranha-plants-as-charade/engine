@@ -1,6 +1,7 @@
 import numpy as np
 
 from common.structures.chord import Chord, ChordQuality
+from common.structures.interval import Interval
 from common.arrangement import ArrangementMetadata
 from common.note_collection import NoteCollection
 
@@ -25,21 +26,49 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
     """
 
     def __init__(
-        self, arrangement_metadata: ArrangementMetadata, melody: NoteCollection
+        self,
+        arrangement_metadata: ArrangementMetadata,
+        melody: NoteCollection,
+        hop_size: int | None,
     ):
         self._priors = np.zeros((ViterbiIndex.TOTAL_STATES))
         # End on tonic major
         # TODO: Determine key of melody.
         self._priors[
-            ViterbiIndex.from_chord(
-                Chord(arrangement_metadata.key, ChordQuality.Maj)
-            ).index
-        ] = 1
+            [
+                ViterbiIndex.from_chord(
+                    Chord(arrangement_metadata.key, ChordQuality.Maj)
+                ).index,
+                ViterbiIndex.from_chord(
+                    Chord(
+                        arrangement_metadata.key + Interval.from_str("4"),
+                        ChordQuality.Maj,
+                    )
+                ).index,
+                ViterbiIndex.from_chord(
+                    Chord(
+                        arrangement_metadata.key + Interval.from_str("5"),
+                        ChordQuality.Maj,
+                    )
+                ).index,
+            ]
+        ] = (
+            1 / 3
+        )
         self._transition_matrix = TransitionMatrix(arrangement_metadata.key).matrix
         self._observation_fn = ObservationFunction()
 
         self._melody = melody
         self._arrangement_metadata = arrangement_metadata
+
+        self._hop_size = hop_size if hop_size is not None else self._default_hop_size
+
+    @property
+    def _default_hop_size(self) -> int:
+        measure_duration = self._arrangement_metadata.Duration(
+            self._arrangement_metadata.beats_per_measure
+        )
+        return round(measure_duration / 2)
 
     def generate(self) -> ChordProgression:
         melody_end = self._melody.list()[-1].start + self._melody.list()[-1].duration
@@ -48,13 +77,8 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
 
         chord_progression = ChordProgression(start_time=0, end_time=end)
 
-        measure_duration = self._arrangement_metadata.Duration(
-            self._arrangement_metadata.beats_per_measure
-        )
-        hop_size = round(measure_duration / 2)
-
         # Total number of observations (melody chunks).
-        T = int(np.ceil(chord_progression.end_time / hop_size))
+        T = int(np.ceil(chord_progression.end_time / self._hop_size))
 
         # DP table for path probabilities.
         probs = np.ones((ViterbiIndex.TOTAL_STATES, T))
@@ -66,15 +90,17 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
             np.arange(ViterbiIndex.TOTAL_STATES),
             notes=self._melody,
             start_time=0,
-            hop_size=hop_size,
+            hop_size=self._hop_size,
         )
 
         t = 1
-        for time in reversed(range(0, melody_end - hop_size, hop_size)):
+        for time in range(self._hop_size, melody_end - self._hop_size, self._hop_size):
             for i in range(ViterbiIndex.TOTAL_STATES):
                 probs[i, t] = np.max(
                     probs[:, t - 1] * self._transition_matrix[:, i]
-                ) * self._observation_fn.get_score(i, self._melody, time, hop_size)
+                ) * self._observation_fn.get_score(
+                    i, self._melody, time, self._hop_size
+                )
                 parent[i, t] = np.argmax(
                     probs[:, t - 1] * self._transition_matrix[:, i]
                 )
@@ -91,14 +117,13 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
             path[t] = parent[path[t + 1], t + 1]
 
         # Build chord progression.
-        i = 0
         prev_chord = -1
-        for t in reversed(range(T)):
+        for t in range(T):
             if path[t] != prev_chord:
                 chord_progression.add_chords(
-                    (ViterbiIndex(path[t]).to_chord(), i * hop_size)
+                    (ViterbiIndex(path[t]).to_chord(), t * self._hop_size)
                 )
-            i += 1
+                print(f"{t=} {ViterbiIndex(path[t]).to_chord()=}")
             prev_chord = path[t]
 
         return chord_progression
