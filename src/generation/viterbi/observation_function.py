@@ -16,7 +16,7 @@ ObservationScoreFnVectorized = Callable[
 class ObservationFunction:
     """
     A function format of the observation matrix for the Viterbi chord progression generator.
-    This function represents the probabiscorelity of observing a particular pitch given a chord.
+    This function represents the score of observing a particular pitch given a chord.
 
     :param algorithm: The algorithm to use for calculating the score. By default, this
         is the frequency counter algorithm.

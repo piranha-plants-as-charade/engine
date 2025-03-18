@@ -123,7 +123,6 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
                 chord_progression.add_chords(
                     (ViterbiIndex(path[t]).to_chord(), t * self._hop_size)
                 )
-                print(f"{t=} {ViterbiIndex(path[t]).to_chord()=}")
             prev_chord = path[t]
 
         return chord_progression
