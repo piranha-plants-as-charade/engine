@@ -62,7 +62,7 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
         parent = np.zeros((ViterbiIndex.TOTAL_STATES, T))
 
         # Initialize with priors and first observation.
-        probs[:, 0] = self._priors * self._observation_fn.get_prob(
+        probs[:, 0] = self._priors * self._observation_fn.get_score(
             np.arange(ViterbiIndex.TOTAL_STATES),
             notes=self._melody,
             start=0,
@@ -71,14 +71,16 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
 
         t = 1
         for time in reversed(range(0, melody_end - hop_size, hop_size)):
-            # TODO: handle case where there is no note exactly at this time.
             for i in range(ViterbiIndex.TOTAL_STATES):
                 probs[i, t] = np.max(
                     probs[:, t - 1] * self._transition_matrix[:, i]
-                ) * self._observation_fn.get_prob(i, self._melody, time, hop_size)
+                ) * self._observation_fn.get_score(i, self._melody, time, hop_size)
                 parent[i, t] = np.argmax(
                     probs[:, t - 1] * self._transition_matrix[:, i]
                 )
+
+            if probs[:, t].sum() == 0:
+                print("WARNING: probabilities converged to zero.")
 
             t += 1
 
