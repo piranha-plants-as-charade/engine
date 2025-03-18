@@ -6,7 +6,7 @@ from common.note_collection import NoteCollection
 
 from generation.chord_progression import ChordProgression
 from generation.viterbi.transition_matrix import TransitionMatrix
-from generation.viterbi.observation_matrix import ObservationMatrix
+from generation.viterbi.observation_function import ObservationFunction
 from generation.chord_progression_generator import ChordProgressionGenerator
 from generation.viterbi.viterbi_index import ViterbiIndex
 
@@ -36,7 +36,7 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
             ).index
         ] = 1
         self._transition_matrix = TransitionMatrix(arrangement_metadata.key).matrix
-        self._observation_matrix = ObservationMatrix().matrix
+        self._observation_fn = ObservationFunction()
 
         self._melody = melody
         self._arrangement_metadata = arrangement_metadata
@@ -53,35 +53,34 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
         )
         hop_size = round(measure_duration / 2)
 
-        # Total number of states (chords).
-        N = len(self._transition_matrix)
         # Total number of observations (melody chunks).
         T = int(np.ceil(chord_progression.end_time / hop_size))
 
         # DP table for path probabilities.
-        probs = np.ones((N, T))
+        probs = np.ones((ViterbiIndex.TOTAL_STATES, T))
         # DP table for backtracking (points to previous state).
-        parent = np.zeros((N, T))
+        parent = np.zeros((ViterbiIndex.TOTAL_STATES, T))
 
         # Initialize with priors and first observation.
-        last_note = self._melody.get_pitches_at_time(end - hop_size)
-        if len(last_note) == 0:
-            last_note = self._melody.get_pitches_at_time(end - 2 * hop_size)
-        (cur_note,) = last_note
-        probs[:, 0] = self._priors * self._observation_matrix[:, cur_note.value % 12]
+        probs[:, 0] = self._priors * self._observation_fn.get_score(
+            np.arange(ViterbiIndex.TOTAL_STATES),
+            notes=self._melody,
+            start_time=0,
+            hop_size=hop_size,
+        )
 
         t = 1
         for time in reversed(range(0, melody_end - hop_size, hop_size)):
-            # TODO: handle case where there is no note exactly at this time.
-            (cur_note,) = self._melody.get_pitches_at_time(time)
-            for i in range(N):
-                probs[i, t] = (
-                    np.max(probs[:, t - 1] * self._transition_matrix[:, i])
-                    * self._observation_matrix[i, cur_note.value % 12]
-                )
+            for i in range(ViterbiIndex.TOTAL_STATES):
+                probs[i, t] = np.max(
+                    probs[:, t - 1] * self._transition_matrix[:, i]
+                ) * self._observation_fn.get_score(i, self._melody, time, hop_size)
                 parent[i, t] = np.argmax(
                     probs[:, t - 1] * self._transition_matrix[:, i]
                 )
+
+            if probs[:, t].sum() == 0:
+                print("WARNING: probabilities converged to zero.")
 
             t += 1
 
