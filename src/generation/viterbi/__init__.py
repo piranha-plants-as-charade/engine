@@ -65,7 +65,7 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
         probs[:, 0] = self._priors * self._observation_fn.get_score(
             np.arange(ViterbiIndex.TOTAL_STATES),
             notes=self._melody,
-            start=0,
+            start_time=0,
             hop_size=hop_size,
         )
 
