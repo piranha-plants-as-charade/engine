@@ -1,7 +1,6 @@
+import librosa
 from typing import Literal, Optional
 from dataclasses import dataclass
-
-from transformers.pitch import PITCH_TRANSFORMER
 
 from common.structures.interval import Interval
 
@@ -23,7 +22,7 @@ class Pitch:
         chord_degree: Optional[int] = None,
     ) -> "Pitch":
         return cls(
-            value=PITCH_TRANSFORMER.from_str(value),
+            value=librosa.note_to_midi(value),  # type: ignore
             chord_degree=chord_degree,
         )
 

@@ -137,3 +137,17 @@ class AudioSampleManager:
 
     def get_random_timbre(self) -> str:
         return random.choice(list(self._timbre_data.keys()))
+
+
+AUDIO_SAMPLE_MANAGERS = {
+    sample_name: AudioSampleManager(
+        load_env(
+            AudioSampleManagerConfig,
+            os.path.join("../data/samples", sample_name, "config"),
+            default_args={"src": sample_name},
+        ),
+    )
+    for sample_name in os.listdir("../data/samples")
+    if os.path.isdir(os.path.join("../data/samples", sample_name))
+}
+print(f"Loaded audio samples from {list(AUDIO_SAMPLE_MANAGERS.keys())}.")
