@@ -3,11 +3,12 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-import common.arrangement as arrangement
-import common.part as part
 from common.note_collection import NoteCollection
 
 from generation.chord_progression import ChordProgression
+
+import export.arrangement as arrangement
+import export.part as part
 
 
 @dataclass(frozen=True)

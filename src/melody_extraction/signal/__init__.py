@@ -2,11 +2,14 @@ import librosa
 import numpy as np
 from numpy.typing import NDArray
 from typing import Tuple
+
 from common.audio_data import AudioData
 from common.note_collection import NoteCollection
-from common.arrangement import ArrangementMetadata
+
 from melody_extraction.signal.note_collection_builder import NoteCollectionBuilder
 from melody_extraction.signal.pitch_detector import PitchDetector, PitchDetectorConfig
+
+from export.arrangement import ArrangementMetadata
 
 
 class SignalMelodyExtractor:

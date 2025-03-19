@@ -4,7 +4,6 @@ from typing import FrozenSet, Tuple, List
 from functools import cached_property
 from collections import deque
 
-from common.arrangement import ArrangementMetadata
 from common.note_collection import NoteCollection
 from common.structures.pitch import Pitch
 from common.structures.interval import Interval
@@ -12,6 +11,8 @@ from common.structures.chord import Chord, ChordQuality
 
 from generation.chord_progression import ChordProgression
 from generation.chord_progression_generator import ChordProgressionGenerator
+
+from export.arrangement import ArrangementMetadata
 
 
 @dataclass(frozen=True)

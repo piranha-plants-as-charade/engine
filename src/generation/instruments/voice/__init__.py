@@ -1,5 +1,3 @@
-from common.arrangement import ArrangementMetadata
-from common.part import SampledPart
 from common.note_collection import NoteCollection
 
 from generation.chord_progression import ChordProgression
@@ -7,6 +5,9 @@ from generation.instruments.base import (
     SampledInstrument,
     SampledInstrumentExportConfig,
 )
+
+from export.arrangement import ArrangementMetadata
+from export.part import SampledPart
 
 
 class Voice(SampledInstrument):

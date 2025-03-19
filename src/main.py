@@ -5,8 +5,6 @@ from typing import Callable, Any
 from logger import LOGGER
 from env import ENV
 
-from common.arrangement import Arrangement, ArrangementExportConfig, ArrangementMetadata
-from common.arrangement_generator import ArrangementGenerator
 from common.note_collection import NoteCollection
 
 from melody_extraction.signal import SignalMelodyExtractor
@@ -17,6 +15,9 @@ from generation.instruments.voice import Voice
 from generation.instruments.piano import Piano
 from generation.instruments.bass_drum import BassDrum
 from generation.instruments.snare_drum import SnareDrum
+
+from export.arrangement import Arrangement, ArrangementExportConfig, ArrangementMetadata
+from export.arrangement_generator import ArrangementGenerator
 
 
 def timed(label: str) -> Any:

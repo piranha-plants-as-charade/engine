@@ -1,11 +1,12 @@
-from common.arrangement import ArrangementMetadata
-from common.arrangement_generator import ArrangementGenerator
 from common.note_collection import NoteCollection
 from common.structures.note import Note
 from common.structures.chord import Chord, ChordQuality
 from common.structures.pitch import Pitch
 
 from generation.chord_progression import ChordProgression
+
+from export.arrangement import ArrangementMetadata
+from export.arrangement_generator import ArrangementGenerator
 
 
 def get_song():

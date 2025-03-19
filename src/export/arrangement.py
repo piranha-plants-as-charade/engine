@@ -8,9 +8,10 @@ from typing import Tuple, List
 from midiutil.MidiFile import MIDIFile  # type: ignore
 
 from common.util import db_to_strength
-import common.part as part
 from common.audio_data import AudioData
 from common.structures.pitch import Pitch
+
+import export.part as part
 
 
 @dataclass(frozen=True)
