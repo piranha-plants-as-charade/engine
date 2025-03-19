@@ -9,19 +9,18 @@ from generation.viterbi.viterbi_index import ViterbiIndex
 class TransitionMatrix:
     """
     The transition matrix for the Viterbi chord progression generator. This matrix
-    represents the probability of transitioning from one chord to another, without
+    represents the score of transitioning from one chord to another, without
     considering the melody.
 
-    Note that since we are working backwards, the transition matrix should be
-    interpreted as follows:
-        matrix[current_chord, previous_chord] = probability of transitioning from prev to current
+    The transition matrix should be interpreted as follows:
+        matrix[current_chord, next_chord] = score of transitioning from current to next chord
 
-    The rows are normalized such that they sum to 1.
+    Note that a score of zero means the transition is not allowed.
 
     Current rules:
-    - A chord may be preceded by I, IV, V in terms of the key
-    - A chord may be preceded by V7 in terms of the current chord
-    - No dom7 after dom7
+    - Any I, IV, V chord may be followed by any chord.
+    - A V7 chord must resolve to its corresponding I chord.
+        - No dom7 after dom7 (unless they are the same chord).
 
     Considerations to think about:
     - Should the diagonal (same chord) be treated differently?
@@ -30,9 +29,7 @@ class TransitionMatrix:
     """
 
     def __init__(self, key: Pitch = Pitch.from_str("C")):
-        self._matrix = (
-            np.zeros((ViterbiIndex.TOTAL_STATES, ViterbiIndex.TOTAL_STATES)) / 100
-        )
+        self._matrix = np.zeros((ViterbiIndex.TOTAL_STATES, ViterbiIndex.TOTAL_STATES))
 
         I_chord = ViterbiIndex.from_chord(Chord(key, ChordQuality.Maj)).index
         IV_chord = ViterbiIndex.from_chord(
@@ -42,22 +39,14 @@ class TransitionMatrix:
             Chord(key + Interval.from_str("5"), ChordQuality.Maj)
         ).index
 
-        self._matrix[:, [I_chord, IV_chord, V_chord]] = 1
+        self._matrix[[I_chord, IV_chord, V_chord], :] = 1
 
         for c in range(ViterbiIndex.TOTAL_STATES):
             chord = ViterbiIndex(c).to_chord()
-            if chord.quality != ChordQuality.Dom7:
-                v7 = ViterbiIndex.from_chord(chord.get_V7()).index
-                self._matrix[c, v7] = 1.2
-            else:
-                self._matrix[c, c] = 1
-        
-        # Encourage diagonals.
-        for i in range(ViterbiIndex.TOTAL_STATES):
-            self._matrix[i, i] *= 1.5
-
-        for r in range(ViterbiIndex.TOTAL_STATES):
-            self._matrix[r, :] /= np.sum(self._matrix[r, :])
+            if chord.quality == ChordQuality.Maj:
+                # V7 must resolve to I.
+                V7 = ViterbiIndex.from_chord(chord.get_V7()).index
+                self._matrix[V7, [c, V7]] = 1
 
     @property
     def matrix(self):
