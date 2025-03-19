@@ -23,13 +23,15 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
 
     :param arrangement_metadata: The arrangement metadata.
     :param melody: The melody to generate the chord progression for.
+    :param hop_size: The hop size for the melody relative to the length of a measure.
+        For example, hop_size=0.5 means the melody is divided into 2 chunks per measure.
     """
 
     def __init__(
         self,
         arrangement_metadata: ArrangementMetadata,
         melody: NoteCollection,
-        hop_size: int | None,
+        hop_size: float = 0.5,
     ):
         self._priors = np.zeros((ViterbiIndex.TOTAL_STATES))
         # End on tonic major
@@ -61,14 +63,12 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
         self._melody = melody
         self._arrangement_metadata = arrangement_metadata
 
-        self._hop_size = hop_size if hop_size is not None else self._default_hop_size
-
-    @property
-    def _default_hop_size(self) -> int:
         measure_duration = self._arrangement_metadata.Duration(
             self._arrangement_metadata.beats_per_measure
         )
-        return round(measure_duration / 2)
+
+        # Hop size of a chunk in terms of quantized units.
+        self._hop_size = round(measure_duration * hop_size)
 
     def generate(self) -> ChordProgression:
         melody_end = self._melody.list()[-1].start + self._melody.list()[-1].duration
