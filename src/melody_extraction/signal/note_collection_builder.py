@@ -3,8 +3,10 @@ from numpy.typing import NDArray
 from common.note_collection import NoteCollection
 from common.structures.note import Note
 from common.structures.pitch import Pitch
-from common.arrangement import ArrangementMetadata
+
 from melody_extraction.util import mode
+
+from export.arrangement import ArrangementMetadata
 
 
 class NoteCollectionBuilder:

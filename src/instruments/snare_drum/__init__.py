@@ -1,14 +1,16 @@
-from common.arrangement import ArrangementMetadata
-from common.part import MIDIPart
 from common.note_collection import NoteCollection
 from common.structures.note import Note
 from common.structures.pitch import Pitch
 
 from generation.chord_progression import ChordProgression
-from generation.instruments.base import (
+
+from instruments.base import (
     MIDIInstrument,
     MIDIInstrumentExportConfig,
 )
+
+from export.arrangement import ArrangementMetadata
+from export.part import MIDIPart
 
 SNARE_DRUM_PITCH = Pitch(38)
 

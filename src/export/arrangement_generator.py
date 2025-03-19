@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from typing import Dict, Type
 
-from common.arrangement import Arrangement, ArrangementMetadata
 from common.note_collection import NoteCollection
 
 from generation.chord_progression import ChordProgression
-import generation.instruments.base as instrument
+
+import instruments.base as instrument
+
+from export.arrangement import Arrangement, ArrangementMetadata
 
 
 class ArrangementGenerator:

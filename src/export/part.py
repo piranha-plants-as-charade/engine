@@ -3,7 +3,6 @@ from __future__ import annotations
 import math
 from midiutil.MidiFile import MIDIFile  # type: ignore
 
-import common.arrangement as arrangement
 from common.note_collection import NoteCollection
 from common.audio_data import AudioData
 from common.audio_sample import (
@@ -11,7 +10,9 @@ from common.audio_sample import (
     AUDIO_SAMPLE_MANAGERS,
 )
 
-import generation.instruments.base as instruments
+import instruments.base as instruments
+
+import export.arrangement as arrangement
 
 
 class Part:

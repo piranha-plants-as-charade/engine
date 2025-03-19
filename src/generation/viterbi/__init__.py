@@ -2,7 +2,6 @@ import numpy as np
 
 from common.structures.chord import Chord, ChordQuality
 from common.structures.interval import Interval
-from common.arrangement import ArrangementMetadata
 from common.note_collection import NoteCollection
 
 from generation.chord_progression import ChordProgression
@@ -10,6 +9,8 @@ from generation.viterbi.transition_matrix import TransitionMatrix
 from generation.viterbi.observation_function import ObservationFunction
 from generation.chord_progression_generator import ChordProgressionGenerator
 from generation.viterbi.viterbi_index import ViterbiIndex
+
+from export.arrangement import ArrangementMetadata
 
 
 class ViterbiChordProgressionGenerator(ChordProgressionGenerator):

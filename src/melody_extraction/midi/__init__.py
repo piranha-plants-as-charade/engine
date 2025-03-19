@@ -1,8 +1,9 @@
 import mido  # type: ignore
 from typing import Tuple, Set
 
-from common.arrangement import ArrangementMetadata
 from common.structures.pitch import Pitch
+
+from export.arrangement import ArrangementMetadata
 
 
 # TODO: move to class

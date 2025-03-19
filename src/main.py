@@ -5,18 +5,19 @@ from typing import Callable, Any
 from logger import LOGGER
 from env import ENV
 
-from common.arrangement import Arrangement, ArrangementExportConfig, ArrangementMetadata
-from common.arrangement_generator import ArrangementGenerator
 from common.note_collection import NoteCollection
 
 from melody_extraction.signal import SignalMelodyExtractor
 
 from generation.chord_progression import ChordProgression
 from generation.viterbi import ViterbiChordProgressionGenerator
-from generation.instruments.voice import Voice
-from generation.instruments.piano import Piano
-from generation.instruments.bass_drum import BassDrum
-from generation.instruments.snare_drum import SnareDrum
+from instruments.voice import Voice
+from instruments.piano import Piano
+from instruments.bass_drum import BassDrum
+from instruments.snare_drum import SnareDrum
+
+from export.arrangement import Arrangement, ArrangementExportConfig, ArrangementMetadata
+from export.arrangement_generator import ArrangementGenerator
 
 
 def timed(label: str) -> Any:
