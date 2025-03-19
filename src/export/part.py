@@ -10,7 +10,7 @@ from common.audio_sample import (
     AUDIO_SAMPLE_MANAGERS,
 )
 
-import generation.instruments.base as instruments
+import instruments.base as instruments
 
 import export.arrangement as arrangement
 

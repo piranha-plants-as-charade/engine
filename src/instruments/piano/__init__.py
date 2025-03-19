@@ -7,7 +7,8 @@ from common.structures.pitch import Pitch
 from common.structures.interval import Interval
 
 from generation.chord_progression import ChordProgression
-from generation.instruments.base import (
+
+from instruments.base import (
     MIDIInstrument,
     MIDIInstrumentExportConfig,
 )

@@ -3,7 +3,8 @@ from common.structures.note import Note
 from common.structures.pitch import Pitch
 
 from generation.chord_progression import ChordProgression
-from generation.instruments.base import (
+
+from instruments.base import (
     MIDIInstrument,
     MIDIInstrumentExportConfig,
 )
@@ -11,11 +12,10 @@ from generation.instruments.base import (
 from export.arrangement import ArrangementMetadata
 from export.part import MIDIPart
 
+SNARE_DRUM_PITCH = Pitch(38)
 
-BASS_DRUM_PITCH = Pitch(35)
 
-
-class BassDrum(MIDIInstrument):
+class SnareDrum(MIDIInstrument):
 
     def __init__(self, name: str):
         super().__init__(name)
@@ -25,7 +25,7 @@ class BassDrum(MIDIInstrument):
         return MIDIInstrumentExportConfig(
             instrument_id=0,
             channel=9,  # percussion must be on the 10th channel
-            volume=64,
+            volume=72,
         )
 
     def generate(
@@ -39,10 +39,12 @@ class BassDrum(MIDIInstrument):
 
         measure = 0
         while arrangement_metadata.Time(measure, 0) < end:
-            time = arrangement_metadata.Time(measure, 0)
-            notes.add(
-                Note(pitch=BASS_DRUM_PITCH, start=time, duration=4),
-            )
+            for beat in range(arrangement_metadata.beats_per_measure):
+                time = arrangement_metadata.Time(measure, beat)
+                notes.add(
+                    Note(pitch=SNARE_DRUM_PITCH, start=time, duration=2),
+                    Note(pitch=SNARE_DRUM_PITCH, start=time + 2, duration=1),
+                    Note(pitch=SNARE_DRUM_PITCH, start=time + 3, duration=1),
+                )
             measure += 1
-
         return MIDIPart(arrangement_metadata, self, notes)

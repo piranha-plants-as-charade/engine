@@ -1,7 +1,8 @@
 from common.note_collection import NoteCollection
 
 from generation.chord_progression import ChordProgression
-from generation.instruments.base import (
+
+from instruments.base import (
     SampledInstrument,
     SampledInstrumentExportConfig,
 )
