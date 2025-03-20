@@ -40,11 +40,13 @@ fastapi dev app.py
 
 This will open a server at `localhost:8000`.
 
-## Production
+## Deployment
 
-Run the following command to build the app in Docker:
+### Google Cloud Platform
+
+This repository comes with a script to deploy the project to Google Cloud Platform's Cloud Run service. To use this script, log into the Google Cloud Platform CLI locally, then run the following command in the repository root:
 ```sh
-docker build -t USER_NAME/IMAGE_NAME --platform linux/amd64 .
+./deploy_to_gcloud/run.sh
 ```
 
 ## Endpoints
