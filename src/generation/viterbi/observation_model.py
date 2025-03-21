@@ -13,7 +13,7 @@ ObservationScoreFnVectorized = Callable[
 ]
 
 
-class ObservationScorers:
+class ObservationScoringFunctions:
 
     @classmethod
     def frequency_counter(
@@ -56,7 +56,7 @@ class ObservationModel:
 
     def __init__(
         self,
-        scoring_fn: ObservationScoreFn = ObservationScorers.frequency_counter,
+        scoring_fn: ObservationScoreFn = ObservationScoringFunctions.frequency_counter,
     ):
         self.scoring_fn = scoring_fn
 
