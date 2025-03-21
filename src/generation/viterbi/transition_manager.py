@@ -15,7 +15,7 @@ from export.arrangement import ArrangementMetadata
 class Transition:
     src: Chord
     dst: Chord
-    weight: float
+    weight: float = 1
 
 
 TransitionAlgorithmFn = Callable[
@@ -52,9 +52,15 @@ class TransitionAlgorithms:
         transitions: List[Transition] = []
         for src in chords:
             for dst in chords:
-                transitions.append(Transition(src=src, dst=dst, weight=1))
-                transitions.append(Transition(src=src, dst=dst.get_V7(), weight=1))
-            transitions.append(Transition(src=src.get_V7(), dst=src, weight=1.5))
+                transitions.append(Transition(src=src, dst=dst))
+                transitions.append(Transition(src=src, dst=dst.get_V7()))
+            transitions.append(
+                Transition(
+                    src=src.get_V7(),
+                    dst=src,
+                    weight=1.5,  # promote secondary dominant resolutions
+                )
+            )
 
         priors = np.zeros((ViterbiIndex.TOTAL_STATES))
         prob = 1 / len(chords)
@@ -63,11 +69,11 @@ class TransitionAlgorithms:
         return (tuple(transitions), priors)
 
 
-class TransitionMatrix:
+class TransitionManager:
     """
-    The transition matrix for the Viterbi chord progression generator. This matrix
-    represents the score of transitioning from one chord to another, without
-    considering the melody.
+    The transition manager for the Viterbi chord progression generator. It contains a matrix
+    that represents the score of transitioning from one chord to another, without
+    considering the melody. It also contains the priors that describe the initial state.
 
     The transition matrix should be interpreted as follows:
         matrix[current_chord, next_chord] = score of transitioning from current to next chord
