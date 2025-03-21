@@ -31,6 +31,17 @@ class TransitionAlgorithms:
         cls,
         arrangement_metadata: ArrangementMetadata,
     ) -> Tuple[Tuple[Transition, ...], NDArray[np.float64]]:
+        """
+        Current rules:
+        - Any I, IV, V chord may be followed by any chord.
+        - A V7 chord must resolve to its corresponding I chord.
+            - No dom7 after dom7 (unless they are the same chord).
+
+        Considerations to think about:
+        - Should the diagonal (same chord) be treated differently?
+        - Probabilities of special cadences (eg. V-I)?
+        - Data collection for transition matrix?
+        """
 
         chords = (
             Chord(arrangement_metadata.key, ChordQuality.Maj),
@@ -63,16 +74,6 @@ class TransitionMatrix:
         matrix[current_chord, next_chord] = score of transitioning from current to next chord
 
     Note that a score of zero means the transition is not allowed.
-
-    Current rules:
-    - Any I, IV, V chord may be followed by any chord.
-    - A V7 chord must resolve to its corresponding I chord.
-        - No dom7 after dom7 (unless they are the same chord).
-
-    Considerations to think about:
-    - Should the diagonal (same chord) be treated differently?
-    - Probabilities of special cadences (eg. V-I)?
-    - Data collection for transition matrix?
     """
 
     def __init__(
