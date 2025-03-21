@@ -25,7 +25,7 @@ class ObservationAlgorithms:
         A simple observation function that counts the number of notes in a chord that are present in
         the given pitches and scales by the number of notes in the chord.
 
-        :param i: The Viterbi index of the chord.
+        :param viterbi_index: The Viterbi index of the chord.
         :param pitches: The pitches to compare against the chord.
         """
         chord = ViterbiIndex(viterbi_index).to_chord()
