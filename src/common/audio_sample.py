@@ -17,7 +17,7 @@ SAMPLES_DIR = "../data/samples"
 
 
 @dataclass(frozen=True)
-class AudioSampleGroupConfig:
+class AudioSampleCollectionConfig:
     """
     :param name: The folder in which the sample file reside (i.e. `data/<name>`), with each file consisting of chromatic ascending notes of the same timbre.
     :param sample_rate: The sample rate at which to load each sample file.
@@ -75,9 +75,9 @@ class SkipFileOnSampleLoad(Exception):
     pass
 
 
-class AudioSampleGroup:
+class AudioSampleCollection:
 
-    def __init__(self, config: AudioSampleGroupConfig):
+    def __init__(self, config: AudioSampleCollectionConfig):
         self._sample_data: Dict[Tuple[str, Pitch], AudioSample] = dict()
         self._timbre_data: Dict[str, AudioSampleTimbreProperties] = dict()
         self._config = config
@@ -141,9 +141,9 @@ class AudioSampleGroup:
 
 
 AUDIO_SAMPLE_LIBRARY = {
-    sample_name: AudioSampleGroup(
+    sample_name: AudioSampleCollection(
         load_env(
-            AudioSampleGroupConfig,
+            AudioSampleCollectionConfig,
             os.path.join(SAMPLES_DIR, sample_name, "config"),
             default_args={"name": sample_name},
         ),
