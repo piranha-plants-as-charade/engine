@@ -1,5 +1,7 @@
 import numpy as np
 
+from logger import LOGGER
+
 from common.note_collection import NoteCollection
 
 from generation.chord_progression import ChordProgression
@@ -83,7 +85,7 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
                 parent[i, t] = np.argmax(probs[:, t - 1] * transition_matrix[:, i])
 
             if probs[:, t].sum() == 0:
-                print("WARNING: probabilities converged to zero.")
+                LOGGER.warning("Probabilities converged to zero.")
             t += 1
 
         # Reconstruct the optimal path.
