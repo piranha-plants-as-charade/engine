@@ -7,7 +7,7 @@ from common.note_collection import NoteCollection
 from common.audio_data import AudioData
 from common.audio_sample import (
     AudioSample,
-    AUDIO_SAMPLE_MANAGERS,
+    AUDIO_SAMPLE_LIBRARY,
 )
 
 import instruments.base as instruments
@@ -106,9 +106,7 @@ class SampledPart(Part):
         def get_shift_size(sample: AudioSample) -> int:
             return config.start_padding_size + sample.timbre_properties.start_shift
 
-        sample_manager = AUDIO_SAMPLE_MANAGERS[
-            self._instrument.export_config.sample_src
-        ]
+        sample_manager = AUDIO_SAMPLE_LIBRARY[self._instrument.export_config.name]
 
         audio_data = AudioData()
         for note in self.notes.list():

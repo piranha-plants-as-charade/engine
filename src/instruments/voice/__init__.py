@@ -19,7 +19,7 @@ class Voice(SampledInstrument):
     @property
     def export_config(self) -> SampledInstrumentExportConfig:
         return SampledInstrumentExportConfig(
-            sample_src="piranha_plant",
+            name="piranha_plant",
         )
 
     def generate(

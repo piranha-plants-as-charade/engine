@@ -13,16 +13,19 @@ from common.structures.pitch import Pitch
 from env import load_env
 
 
+SAMPLES_DIR = "../data/samples"
+
+
 @dataclass(frozen=True)
-class AudioSampleManagerConfig:
+class AudioSampleCollectionConfig:
     """
-    :param src: The folder in which the sample file reside (i.e. `data/<src>`), with each file consisting of chromatic ascending notes of the same timbre.
+    :param name: The folder in which the sample file reside (i.e. `data/<name>`), with each file consisting of chromatic ascending notes of the same timbre.
     :param sample_rate: The sample rate at which to load each sample file.
     :param range: The range supported.
     :param beats_per_minute: The tempo at which each note is 1 beat.
     """
 
-    src: str
+    name: str
     sample_rate: int = 44100
     range: Tuple[Pitch, Pitch] = (
         Pitch.from_str("C3"),
@@ -72,25 +75,23 @@ class SkipFileOnSampleLoad(Exception):
     pass
 
 
-class AudioSampleManager:
+class AudioSampleCollection:
 
-    def __init__(self, config: AudioSampleManagerConfig):
+    def __init__(self, config: AudioSampleCollectionConfig):
         self._sample_data: Dict[Tuple[str, Pitch], AudioSample] = dict()
         self._timbre_data: Dict[str, AudioSampleTimbreProperties] = dict()
         self._config = config
-        for timbre_file in os.listdir(self._samples_dir):
+        for timbre_file in os.listdir(os.path.join(SAMPLES_DIR, self._config.name)):
             try:
-                self._load_timbre_file(os.path.join(self._samples_dir, timbre_file))
+                self._load_timbre_file(
+                    os.path.join(SAMPLES_DIR, self._config.name, timbre_file)
+                )
             except SkipFileOnSampleLoad:
                 pass
             except:
                 print(f"Failed to load {timbre_file}.")
             else:
                 print(f"Loaded {timbre_file}.")
-
-    @property
-    def _samples_dir(self) -> str:
-        return os.path.join("../data/samples", self._config.src)
 
     def _load_timbre_file(self, path: str):
         dir, file_name = os.path.split(path)
@@ -139,15 +140,15 @@ class AudioSampleManager:
         return random.choice(list(self._timbre_data.keys()))
 
 
-AUDIO_SAMPLE_MANAGERS = {
-    sample_name: AudioSampleManager(
+AUDIO_SAMPLE_LIBRARY = {
+    sample_name: AudioSampleCollection(
         load_env(
-            AudioSampleManagerConfig,
-            os.path.join("../data/samples", sample_name, "config"),
-            default_args={"src": sample_name},
+            AudioSampleCollectionConfig,
+            os.path.join(SAMPLES_DIR, sample_name, "config"),
+            default_args={"name": sample_name},
         ),
     )
-    for sample_name in os.listdir("../data/samples")
-    if os.path.isdir(os.path.join("../data/samples", sample_name))
+    for sample_name in os.listdir(SAMPLES_DIR)
+    if os.path.isdir(os.path.join(SAMPLES_DIR, sample_name))
 }
-print(f"Loaded audio samples from {list(AUDIO_SAMPLE_MANAGERS.keys())}.")
+print(f"Loaded audio samples from {list(AUDIO_SAMPLE_LIBRARY.keys())}.")
