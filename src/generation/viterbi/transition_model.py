@@ -57,6 +57,13 @@ class TransitionAlgorithms:
             transitions.append(
                 Transition(
                     src=src.get_V7(),
+                    dst=src.get_V7(),
+                    weight=1,
+                )
+            )
+            transitions.append(
+                Transition(
+                    src=src.get_V7(),
                     dst=src,
                     weight=1.5,  # promote secondary dominant resolutions
                 )
