@@ -54,13 +54,7 @@ class TransitionAlgorithms:
             for dst in chords:
                 transitions.append(Transition(src=src, dst=dst))
                 transitions.append(Transition(src=src, dst=dst.get_V7()))
-            transitions.append(
-                Transition(
-                    src=src.get_V7(),
-                    dst=src.get_V7(),
-                    weight=1,
-                )
-            )
+            transitions.append(Transition(src=src.get_V7(), dst=src.get_V7()))
             transitions.append(
                 Transition(
                     src=src.get_V7(),
