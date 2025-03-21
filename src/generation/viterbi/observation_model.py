@@ -13,7 +13,7 @@ ObservationScoreFnVectorized = Callable[
 ]
 
 
-class ObservationAlgorithms:
+class ObservationScorers:
 
     @classmethod
     def frequency_counter(
@@ -45,7 +45,7 @@ class ObservationAlgorithms:
         return score
 
 
-class ObservationFunction:
+class ObservationModel:
     """
     A function format of the observation matrix for the Viterbi chord progression generator.
     This function represents the score of observing a particular pitch given a chord.
@@ -56,13 +56,13 @@ class ObservationFunction:
 
     def __init__(
         self,
-        algorithm: ObservationScoreFn = ObservationAlgorithms.frequency_counter,
+        scoring_fn: ObservationScoreFn = ObservationScorers.frequency_counter,
     ):
-        self.algorithm = algorithm
+        self.scoring_fn = scoring_fn
 
     @property
-    def algorithm_vectorized(self) -> ObservationScoreFnVectorized:
-        return np.vectorize(self.algorithm, excluded=[1])
+    def vectorized_scoring_fn(self) -> ObservationScoreFnVectorized:
+        return np.vectorize(self.scoring_fn, excluded=[1])
 
     def get_score(
         self,
@@ -76,6 +76,6 @@ class ObservationFunction:
             pitches.append(notes.get_pitches_at_time(index))
 
         if isinstance(viterbi_index, np.ndarray):
-            return self.algorithm_vectorized(viterbi_index, tuple(pitches))
+            return self.vectorized_scoring_fn(viterbi_index, tuple(pitches))
 
-        return self.algorithm(viterbi_index, tuple(pitches))
+        return self.scoring_fn(viterbi_index, tuple(pitches))

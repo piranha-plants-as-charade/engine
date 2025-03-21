@@ -69,7 +69,7 @@ class TransitionAlgorithms:
         return (tuple(transitions), priors)
 
 
-class TransitionManager:
+class TransitionModel:
     """
     The transition manager for the Viterbi chord progression generator. It contains a matrix
     that represents the score of transitioning from one chord to another, without
