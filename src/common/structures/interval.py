@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from transformers.interval import INTERVAL_TRANSFORMER
@@ -11,7 +11,7 @@ class Interval:
     """
 
     value: int
-    chord_degree: Optional[int] = None
+    chord_degree: Optional[int] = field(default=None, compare=False)
     # TODO: add scale degree?
 
     @classmethod
