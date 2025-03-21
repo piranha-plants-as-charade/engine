@@ -52,8 +52,7 @@ class TransitionAlgorithms:
         transitions: List[Transition] = []
         for src in chords:
             for dst in chords:
-                if src != dst:
-                    transitions.append(Transition(src=src, dst=dst, weight=1))
+                transitions.append(Transition(src=src, dst=dst, weight=1))
                 transitions.append(Transition(src=src, dst=dst.get_V7(), weight=1))
             transitions.append(Transition(src=src.get_V7(), dst=src, weight=1.5))
 
@@ -82,9 +81,6 @@ class TransitionMatrix:
         algorithm: TransitionAlgorithmFn = TransitionAlgorithms.resolve_to_I_IV_V,
     ):
         self._matrix = np.zeros((ViterbiIndex.TOTAL_STATES, ViterbiIndex.TOTAL_STATES))
-
-        for i in range(ViterbiIndex.TOTAL_STATES):
-            self._matrix[i, i] = 1
 
         transitions, self._priors = algorithm(arrangement_metadata)
 
