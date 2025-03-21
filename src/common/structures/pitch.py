@@ -1,6 +1,6 @@
 import librosa
 from typing import Literal, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from common.structures.interval import Interval
 
@@ -12,7 +12,7 @@ class Pitch:
     """
 
     value: int
-    chord_degree: Optional[int] = None
+    chord_degree: Optional[int] = field(default=None, compare=False)
     # TODO: add scale degree?
 
     @classmethod

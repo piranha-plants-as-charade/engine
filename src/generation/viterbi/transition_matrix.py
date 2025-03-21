@@ -1,9 +1,56 @@
 import numpy as np
+from numpy.typing import NDArray
+from dataclasses import dataclass
+from typing import Tuple, List, Callable
+
 from common.structures.chord import Chord, ChordQuality
-from common.structures.pitch import Pitch
 from common.structures.interval import Interval
 
 from generation.viterbi.viterbi_index import ViterbiIndex
+
+from export.arrangement import ArrangementMetadata
+
+
+@dataclass(frozen=True)
+class Transition:
+    src: Chord
+    dst: Chord
+    weight: float
+
+
+TransitionAlgorithmFn = Callable[
+    [ArrangementMetadata],
+    Tuple[Tuple[Transition, ...], NDArray[np.float64]],
+]
+
+
+class TransitionAlgorithms:
+
+    @classmethod
+    def resolve_to_I_IV_V(
+        cls,
+        arrangement_metadata: ArrangementMetadata,
+    ) -> Tuple[Tuple[Transition, ...], NDArray[np.float64]]:
+
+        chords = (
+            Chord(arrangement_metadata.key, ChordQuality.Maj),
+            Chord(arrangement_metadata.key + Interval.from_str("4"), ChordQuality.Maj),
+            Chord(arrangement_metadata.key + Interval.from_str("5"), ChordQuality.Maj),
+        )
+
+        transitions: List[Transition] = []
+        for src in chords:
+            for dst in chords:
+                if src != dst:
+                    transitions.append(Transition(src=src, dst=dst, weight=1))
+                transitions.append(Transition(src=src, dst=dst.get_V7(), weight=1))
+            transitions.append(Transition(src=src.get_V7(), dst=src, weight=1.5))
+
+        priors = np.zeros((ViterbiIndex.TOTAL_STATES))
+        prob = 1 / len(chords)
+        priors[[ViterbiIndex.from_chord(chord).index for chord in chords]] = prob
+
+        return (tuple(transitions), priors)
 
 
 class TransitionMatrix:
@@ -28,26 +75,28 @@ class TransitionMatrix:
     - Data collection for transition matrix?
     """
 
-    def __init__(self, key: Pitch = Pitch.from_str("C")):
+    def __init__(
+        self,
+        arrangement_metadata: ArrangementMetadata,
+        algorithm: TransitionAlgorithmFn = TransitionAlgorithms.resolve_to_I_IV_V,
+    ):
         self._matrix = np.zeros((ViterbiIndex.TOTAL_STATES, ViterbiIndex.TOTAL_STATES))
 
-        I_chord = ViterbiIndex.from_chord(Chord(key, ChordQuality.Maj)).index
-        IV_chord = ViterbiIndex.from_chord(
-            Chord(key + Interval.from_str("4"), ChordQuality.Maj)
-        ).index
-        V_chord = ViterbiIndex.from_chord(
-            Chord(key + Interval.from_str("5"), ChordQuality.Maj)
-        ).index
+        for i in range(ViterbiIndex.TOTAL_STATES):
+            self._matrix[i, i] = 1
 
-        self._matrix[[I_chord, IV_chord, V_chord], :] = 1
+        transitions, self._priors = algorithm(arrangement_metadata)
 
-        for c in range(ViterbiIndex.TOTAL_STATES):
-            chord = ViterbiIndex(c).to_chord()
-            if chord.quality == ChordQuality.Maj:
-                # V7 must resolve to I.
-                V7 = ViterbiIndex.from_chord(chord.get_V7()).index
-                self._matrix[V7, [c, V7]] = 1
+        for transition in transitions:
+            self._matrix[
+                ViterbiIndex.from_chord(transition.src).index,
+                ViterbiIndex.from_chord(transition.dst).index,
+            ] = transition.weight
 
     @property
-    def matrix(self):
+    def matrix(self) -> NDArray[np.float64]:
         return self._matrix
+
+    @property
+    def priors(self) -> NDArray[np.float64]:
+        return self._priors
