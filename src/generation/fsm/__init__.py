@@ -84,7 +84,7 @@ class _FSMState:
         return instance_cost + self.prev_state.cost()
 
     def _notes(self) -> FrozenSet[Pitch]:
-        return self.context.melody.get_pitches_in_time_range(self.time_interval)
+        return self.context.melody.get_pitches_in_time_interval(self.time_interval)
 
 
 class FSMChordProgressionGenerator(ChordProgressionGenerator):
