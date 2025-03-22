@@ -133,8 +133,11 @@ class AudioSampleCollection:
     def sample_rate(self) -> int:
         return self._config.sample_rate
 
-    def get_sample(self, timbre: str, pitch: Pitch) -> AudioSample:
-        return self._sample_data[(timbre, Pitch(pitch.value))]
+    def get_sample(self, timbre: str, pitch: Pitch) -> AudioSample | None:
+        search = (timbre, Pitch(pitch.value))
+        if search not in self._sample_data:
+            return None
+        return self._sample_data[search]
 
     def get_random_timbre(self, seed: Optional[int] = None) -> str:
         random.seed(seed)

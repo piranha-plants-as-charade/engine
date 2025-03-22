@@ -113,6 +113,9 @@ class SampledPart(Part):
         for i, note in enumerate(self.notes.list()):
             timbre = sample_manager.get_random_timbre(i)
             sample = sample_manager.get_sample(timbre, note.pitch)
+            if not sample:  # ignore out-of-range samples
+                # TODO: handle this properly
+                continue
             note_len = min(len(sample.audio.array), to_sample_time(note.duration))
             start_time = to_sample_time(note.start) + get_shift_size(sample)
             note_range = (start_time, start_time + note_len)
