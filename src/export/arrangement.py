@@ -57,7 +57,7 @@ class ArrangementExportConfig:
     )
     soundfont_path: str = "../data/soundfonts/ms_basic.sf3"
     midi_db: float = 10.5
-    sample_db: float = -3
+    sample_db: float = -1.5
 
     @property
     def start_padding_frames(self) -> int:
