@@ -25,7 +25,7 @@ class SnareDrum(MIDIInstrument):
         return MIDIInstrumentExportConfig(
             instrument_id=0,
             channel=9,  # percussion must be on the 10th channel
-            volume=72,
+            volume=84,
         )
 
     def generate(

@@ -27,8 +27,9 @@ class Piano(MIDIInstrument):
     @property
     def export_config(self) -> MIDIInstrumentExportConfig:
         return MIDIInstrumentExportConfig(
-            instrument_id=1,  # acoustic grand
+            instrument_id=0,  # acoustic grand
             channel=0,
+            volume=96,
         )
 
     def generate(

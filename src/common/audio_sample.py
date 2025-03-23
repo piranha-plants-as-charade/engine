@@ -1,8 +1,10 @@
 import os
 import random
+import librosa
+import scipy.signal  # type: ignore
 import numpy as np
 from dataclasses import dataclass
-from typing import Tuple, Dict, Optional
+from typing import Tuple, Dict, Optional, Callable
 from numpy.typing import NDArray
 from functools import cache
 
@@ -13,7 +15,20 @@ from common.structures.pitch import Pitch
 from env import load_env
 
 
+FilterFn = Callable[[AudioData, float], AudioData]
+
+
 SAMPLES_DIR = "../data/samples"
+FILTER_FNS: Dict[str, FilterFn] = {
+    "none": lambda data, pitch: data,
+    "voice": lambda data, pitch: data.apply_filter(
+        scipy.signal.butter(  # type: ignore
+            1,
+            pitch * 9 / (data.sample_rate / 2),
+            btype="lowpass",
+        )
+    ),
+}
 
 
 @dataclass(frozen=True)
@@ -32,21 +47,28 @@ class AudioSampleCollectionConfig:
         Pitch.from_str("G6"),
     )
     beats_per_minute: int = 60
+    filter_type: str = "none"
+
+    @property
+    def filter_fn(self) -> FilterFn:
+        assert self.filter_type in FILTER_FNS
+        return FILTER_FNS[self.filter_type]
 
 
 @dataclass(frozen=True)
 class AudioSampleTimbreProperties:
     """
-    :param start_shift: The number of indices to shift the audio sample by in the positive time direction.
-    :param start_sample_idx: The index of the start of the audio sample.
-    :param end_sample_idx: The index of the end of the audio sample.
+    :param frame_shift: The number of frames to shift the audio sample by in the positive time direction.
+    :param start_frame: The frame of the start of the audio sample.
+    :param end_frame: The frame of the end of the audio sample.
     :param ease_in_factor: The envelope's fade-in duration relative to sample's entire duration.
     :param ease_out_factor: The envelope's fade-out duration relative to sample's entire duration.
+    :param db: The decibel level of the sample.
     """
 
-    start_shift: int = 0
-    start_sample_idx: int = 0
-    end_sample_idx: int = 38000
+    frame_shift: int = 0
+    start_frame: int = 0
+    end_frame: int = 38000
     ease_in_factor: float = 0
     ease_out_factor: float = 0.1
     db: float = 0
@@ -111,21 +133,24 @@ class AudioSampleCollection:
         )
 
         def splice_audio(index: int) -> AudioData:
-            def to_sample_time(position: float) -> int:
+            def to_frame(position: float) -> int:
                 m = self.sample_rate * 60 / self._config.beats_per_minute
                 return int(m * position)
 
-            sample_time = to_sample_time(index)
+            frame = to_frame(index)
             return audio.slice(
-                sample_time + timbre_properties.start_sample_idx,
-                sample_time + timbre_properties.end_sample_idx,
+                frame + timbre_properties.start_frame,
+                frame + timbre_properties.end_frame,
             )
 
         for i, pitch_value in enumerate(
             range(self._config.range[0].value, self._config.range[1].value + 1)
         ):
             self._sample_data[(timbre, Pitch(pitch_value))] = AudioSample(
-                audio=splice_audio(i),
+                audio=self._config.filter_fn(
+                    splice_audio(i),
+                    float(librosa.midi_to_hz(pitch_value)),  # type: ignore
+                ),
                 timbre_properties=timbre_properties,
             )
 
@@ -134,7 +159,7 @@ class AudioSampleCollection:
         return self._config.sample_rate
 
     def get_sample(self, timbre: str, pitch: Pitch) -> AudioSample | None:
-        query = (timbre, Pitch(pitch.value))
+        query = (timbre, pitch)
         if query not in self._sample_data:
             return None
         return self._sample_data[query]
@@ -148,7 +173,7 @@ AUDIO_SAMPLE_LIBRARY = {
     sample_name: AudioSampleCollection(
         load_env(
             AudioSampleCollectionConfig,
-            os.path.join(SAMPLES_DIR, sample_name, "config"),
+            os.path.join(SAMPLES_DIR, sample_name, ".config"),
             default_args={"name": sample_name},
         ),
     )
