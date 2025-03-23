@@ -19,13 +19,13 @@ class NoteCollection:
         pitches = [note.pitch for note in self._notes if note.start <= time < note.end]
         return frozenset(pitches)
 
-    def get_pitches_in_time_range(
+    def get_pitches_in_time_interval(
         self,
-        time_range: Tuple[int, int],
+        time_interval: Tuple[int, int],
     ) -> FrozenSet[Pitch]:
         pitches = [
             note.pitch
             for note in self._notes
-            if note.start < time_range[1] and time_range[0] < note.end
+            if note.start < time_interval[1] and time_interval[0] < note.end
         ]
         return frozenset(pitches)

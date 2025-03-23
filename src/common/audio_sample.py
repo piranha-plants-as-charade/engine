@@ -2,7 +2,7 @@ import os
 import random
 import numpy as np
 from dataclasses import dataclass
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Optional
 from numpy.typing import NDArray
 from functools import cache
 
@@ -133,10 +133,14 @@ class AudioSampleCollection:
     def sample_rate(self) -> int:
         return self._config.sample_rate
 
-    def get_sample(self, timbre: str, pitch: Pitch) -> AudioSample:
-        return self._sample_data[(timbre, Pitch(pitch.value))]
+    def get_sample(self, timbre: str, pitch: Pitch) -> AudioSample | None:
+        query = (timbre, Pitch(pitch.value))
+        if query not in self._sample_data:
+            return None
+        return self._sample_data[query]
 
-    def get_random_timbre(self) -> str:
+    def get_random_timbre(self, seed: Optional[int] = None) -> str:
+        random.seed(seed)
         return random.choice(list(self._timbre_data.keys()))
 
 
