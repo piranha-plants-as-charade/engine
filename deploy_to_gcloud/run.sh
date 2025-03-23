@@ -17,5 +17,6 @@ docker push $ARTIFACT_REGISTRY_IMAGE_URI
 # Deploy service to Cloud Run.
 python3 ./deploy_to_gcloud/compile_yaml.py ./deploy_to_gcloud/service.yaml > ./deploy_to_gcloud/service.compiled.yaml
 python3 ./deploy_to_gcloud/compile_yaml.py ./deploy_to_gcloud/policy.yaml > ./deploy_to_gcloud/policy.compiled.yaml
+gcloud run services delete --region $REGION $CLOUD_RUN_SERVICE
 gcloud run services replace ./deploy_to_gcloud/service.compiled.yaml
 gcloud run services set-iam-policy --region $REGION $CLOUD_RUN_SERVICE ./deploy_to_gcloud/policy.compiled.yaml
