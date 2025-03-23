@@ -29,7 +29,7 @@ class Piano(MIDIInstrument):
         return MIDIInstrumentExportConfig(
             instrument_id=0,  # acoustic grand
             channel=0,
-            volume=96,
+            volume=90,
         )
 
     def generate(
