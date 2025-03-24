@@ -96,7 +96,7 @@ class SampledPart(Part):
     def get_audio_data(self, config: arrangement.ArrangementExportConfig) -> AudioData:
         assert isinstance(self._instrument, instruments.SampledInstrument)
 
-        def to_sample_time(time: float) -> int:
+        def to_frame(time: float) -> int:
             m = config.sample_rate * 60 / self._arrangement_metadata.beats_per_minute
             m *= (
                 self._arrangement_metadata.beat_duration
@@ -105,7 +105,7 @@ class SampledPart(Part):
             return int(m * time)
 
         def get_shift_size(sample: AudioSample) -> int:
-            return config.start_padding_size + sample.timbre_properties.start_shift
+            return config.start_padding_frames + sample.timbre_properties.frame_shift
 
         sample_manager = AUDIO_SAMPLE_LIBRARY[self._instrument.export_config.name]
 
@@ -116,9 +116,9 @@ class SampledPart(Part):
             if not sample:  # ignore out-of-range samples
                 # TODO: handle this properly
                 continue
-            note_len = min(len(sample.audio.array), to_sample_time(note.duration))
-            start_time = to_sample_time(note.start) + get_shift_size(sample)
-            note_range = (start_time, start_time + note_len)
+            note_len = min(len(sample.audio.array), to_frame(note.duration))
+            start_frame = to_frame(note.start) + get_shift_size(sample)
+            note_range = (start_frame, start_frame + note_len)
 
             audio_data.add_range(
                 note_range,

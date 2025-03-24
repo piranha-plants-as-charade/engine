@@ -1,6 +1,7 @@
 import librosa
 import numpy as np
-from typing import DefaultDict, Dict, Tuple
+import scipy.signal  # type: ignore
+from typing import DefaultDict, Dict, Tuple, Any
 from numpy.typing import NDArray
 from collections import defaultdict
 from functools import cached_property
@@ -20,7 +21,7 @@ class AudioData:
         self.set_range((0, len(init_data)), init_data)
 
     @classmethod
-    def from_file(cls, file_name: str, sample_rate: (float | None) = None, db: float = 0):
+    def from_file(cls, file_name: str, sample_rate: float | None = None, db: float = 0):
         signal: NDArray[np.float32]
 
         signal, sr = librosa.load(  # type: ignore
@@ -73,6 +74,13 @@ class AudioData:
             new_dict[key + n] = val
         self._data = defaultdict(lambda: np.float32(0), new_dict)
         self._clear_array_cache()
+
+    def apply_filter(self, filt: Any) -> "AudioData":  # TODO: type `filt` properly
+        self = AudioData(
+            init_data=scipy.signal.lfilter(*filt, self.array).astype(np.float32),  # type: ignore
+            sample_rate=self.sample_rate,
+        )
+        return self
 
     def _clear_array_cache(self):
         try:
