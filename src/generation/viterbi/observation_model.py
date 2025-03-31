@@ -2,6 +2,7 @@ from typing import Callable, FrozenSet, List, Tuple
 import numpy as np
 from numpy.typing import NDArray
 
+from common.util import EPSILON
 from common.note_collection import NoteCollection
 from common.structures.pitch import Pitch
 
@@ -78,4 +79,4 @@ class ObservationModel:
         if isinstance(viterbi_index, np.ndarray):
             return self.vectorized_scoring_fn(viterbi_index, tuple(pitches))
 
-        return self.scoring_fn(viterbi_index, tuple(pitches))
+        return np.log(self.scoring_fn(viterbi_index, tuple(pitches)) + EPSILON)
