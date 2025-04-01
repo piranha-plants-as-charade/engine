@@ -2,8 +2,6 @@ import math
 import numpy as np
 from numpy.typing import NDArray
 
-from logger import LOGGER
-
 from common.note_collection import NoteCollection
 
 from generation.chord_progression import ChordProgression
@@ -69,7 +67,7 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
         parent = np.zeros((ViterbiIndex.TOTAL_STATES, T))
 
         # Initialize with priors and first observation.
-        probs[:, 0] = priors * self._get_observation_score_at_time(
+        probs[:, 0] = priors + self._get_observation_score_at_time(
             np.arange(ViterbiIndex.TOTAL_STATES),
             start_time=0,
         )
@@ -78,20 +76,10 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
             time = t * self._hop_size
             for i in range(ViterbiIndex.TOTAL_STATES):
                 score = self._get_observation_score_at_time(i, start_time=time)
-                candidate_probs = probs[:, t - 1] * transition_matrix[:, i] * score
+                candidate_probs = probs[:, t - 1] + transition_matrix[:, i] + score
                 probs[i, t] = np.max(candidate_probs)
                 parent[i, t] = np.argmax(candidate_probs)
 
-            if probs[:, t].sum() == 0:
-                LOGGER.warning(
-                    f"Probabilities converged to zero at t={t}. Reverting to `priors` at t={t}."
-                )
-                probs[:, t] = priors * self._get_observation_score_at_time(
-                    np.arange(ViterbiIndex.TOTAL_STATES),
-                    start_time=time,
-                )
-                # FIXME: handle `parent[:, t]`
-        
         # Reconstruct the optimal path.
         path = np.zeros(T, dtype=int)
         path[T - 1] = np.argmax(probs[:, T - 1])

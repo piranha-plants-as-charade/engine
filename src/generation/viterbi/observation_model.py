@@ -78,4 +78,4 @@ class ObservationModel:
         if isinstance(viterbi_index, np.ndarray):
             return self.vectorized_scoring_fn(viterbi_index, tuple(pitches))
 
-        return self.scoring_fn(viterbi_index, tuple(pitches))
+        return np.log(self.scoring_fn(viterbi_index, tuple(pitches)) + np.finfo(np.float64).eps)
