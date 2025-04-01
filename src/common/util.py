@@ -1,9 +1,6 @@
 import mimetypes
 
 
-EPSILON = 1e-10
-
-
 def db_to_strength(db: float) -> float:
     return 10 ** (db / 20)
 

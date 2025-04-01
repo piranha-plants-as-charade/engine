@@ -79,7 +79,7 @@ class ViterbiChordProgressionGenerator(ChordProgressionGenerator):
                 candidate_probs = probs[:, t - 1] + transition_matrix[:, i] + score
                 probs[i, t] = np.max(candidate_probs)
                 parent[i, t] = np.argmax(candidate_probs)
-                
+
         # Reconstruct the optimal path.
         path = np.zeros(T, dtype=int)
         path[T - 1] = np.argmax(probs[:, T - 1])

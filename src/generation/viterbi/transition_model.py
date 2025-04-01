@@ -3,7 +3,6 @@ from numpy.typing import NDArray
 from dataclasses import dataclass
 from typing import Tuple, List, Callable
 
-from common.util import EPSILON
 from common.structures.chord import Chord, ChordQuality
 from common.structures.interval import Interval
 
@@ -97,9 +96,9 @@ class TransitionModel:
                 ViterbiIndex.from_chord(transition.src).index,
                 ViterbiIndex.from_chord(transition.dst).index,
             ] = transition.weight
-            
-        self._matrix = np.log(self._matrix + EPSILON)
-        self._priors = np.log(self._priors + EPSILON)
+
+        self._matrix = np.log(self._matrix + np.finfo(np.float64).eps)
+        self._priors = np.log(self._priors + np.finfo(np.float64).eps)
 
     @property
     def matrix(self) -> NDArray[np.float64]:
