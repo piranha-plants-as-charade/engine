@@ -97,6 +97,9 @@ class TransitionModel:
                 ViterbiIndex.from_chord(transition.dst).index,
             ] = transition.weight
 
+        self._matrix = np.log(self._matrix + np.finfo(np.float64).eps)
+        self._priors = np.log(self._priors + np.finfo(np.float64).eps)
+
     @property
     def matrix(self) -> NDArray[np.float64]:
         return self._matrix
